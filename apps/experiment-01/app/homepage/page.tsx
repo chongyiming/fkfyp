@@ -201,7 +201,7 @@ const Homepage = () => {
                   >
                     <FileUp className="h-8 w-8 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Upload ECG data
+                      Click to upload ECG data
                     </span>
                   </label>
                   {files.length > 0 && (
@@ -217,7 +217,7 @@ const Homepage = () => {
                   disabled={isUploading || files.length === 0}
                   className="mt-4 w-full"
                 >
-                  {isUploading ? "Uploading..." : "Upload Files"}
+                  {isUploading ? "Uploading..." : "Save files"}
                 </Button>
 
                 {/* Upload success message */}
