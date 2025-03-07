@@ -1,0 +1,335 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles for the Commission Claims card */
+.commission-claims-card {
+  background: linear-gradient(145deg, #1e293b, #111827);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+              0 0 0 2px rgba(99, 102, 241, 0.05),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.commission-claims-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  z-index: -1;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(99, 102, 241, 0));
+  opacity: 0.5;
+}
+
+.commission-claims-header {
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.commission-claims-card .text-5xl {
+  background: linear-gradient(90deg, #9b87f5, #6e59a5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+.commission-claims-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Custom styles for the Upcoming Appointments card */
+.upcoming-appointments-card {
+  background: linear-gradient(145deg, #1f1d2c, #2a1d3e);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 
+              0 0 0 2px rgba(139, 92, 246, 0.08),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.upcoming-appointments-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  z-index: -1;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(139, 92, 246, 0));
+  opacity: 0.4;
+}
+
+.upcoming-appointments-header {
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  flex-shrink: 0;
+}
+
+.upcoming-appointments-title {
+  color: #d6bcfa;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #d6bcfa, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.upcoming-appointments-content {
+  padding: 1.25rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.appointment-item {
+  border-left: 2px solid;
+  padding-left: 0.75rem;
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.appointment-item:hover {
+  transform: translateX(2px);
+}
+
+.appointment-item.calendar {
+  border-color: #33C3F0;
+}
+
+.appointment-item.users {
+  border-color: #8B5CF6;
+}
+
+.appointment-item-title {
+  font-weight: 500;
+  margin-bottom: 0.125rem;
+}
+
+.appointment-item-time {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.appointment-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.appointment-icon.calendar {
+  background-color: rgba(51, 195, 240, 0.2);
+  color: #33C3F0;
+}
+
+.appointment-icon.users {
+  background-color: rgba(139, 92, 246, 0.2);
+  color: #8B5CF6;
+}
+
+/* Welcome message styles */
+.welcome-message {
+  padding: 0.5rem 0;
+}
+
+.welcome-message h2 {
+  background: linear-gradient(90deg, #ffffff, #d6bcfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.welcome-message p {
+  color: #8A898C;
+  font-size: 1.125rem;
+}
+
+/* Dashboard Grid Layout */
+.grid-dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto auto auto auto;
+  grid-template-areas:
+    "welcome welcome welcome commission-claims"
+    "metrics metrics metrics commission-claims"
+    "yearly-sales yearly-sales yearly-sales sales-transaction"
+    "yearly-sales yearly-sales yearly-sales upcoming-appointments"
+    "recent-activity recent-activity recent-activity upcoming-appointments";
+  gap: 20px;
+  padding: 4px;
+}
+
+/* Card container styles to ensure consistent appearance */
+.dashboard-card {
+  background: #1a1f2c;
+  border: 1px solid #2a3143;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.welcome { 
+  grid-area: welcome;
+  display: flex;
+  align-items: center;
+}
+
+.metrics { 
+  grid-area: metrics; 
+}
+
+.yearly-sales { 
+  grid-area: yearly-sales;
+}
+
+.commission-claims { 
+  grid-area: commission-claims; 
+  height: 100%;
+}
+
+.sales-transaction { 
+  grid-area: sales-transaction;
+  height: 170px;
+}
+
+.upcoming-appointments { 
+  grid-area: upcoming-appointments;
+}
+
+/* Add custom height for the Upcoming Appointments specifically to fill the gap */
+.upcoming-appointments .upcoming-appointments-card {
+  min-height: 480px; /* Increased height to extend downward across two rows */
+}
+
+.recent-activity { 
+  grid-area: recent-activity;
+  height: 100%;
+  margin-top: 0; /* Ensure recent activity sits properly below */
+}
+
+/* Recent activity custom styling */
+.recent-activity .dashboard-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-activity-items {
+  flex: 1;
+  overflow-y: auto;
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.3) rgba(26, 31, 44, 0.5);
+}
+
+.recent-activity-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.recent-activity-items::-webkit-scrollbar-track {
+  background: rgba(26, 31, 44, 0.5);
+  border-radius: 10px;
+}
+
+.recent-activity-items::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+}

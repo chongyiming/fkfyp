@@ -1,0 +1,37 @@
+{
+  "name": "ui-experiments",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/uuid": "^10.0.0",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "prettier": "^3.2.5",
+    "turbo": "^2.3.0",
+    "typescript": "5.5.4"
+  },
+  "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@supabase/supabase-js": "^2.48.1",
+    "@types/react-router-dom": "^5.3.3",
+    "clsx": "^2.1.1",
+    "d3": "^7.9.0",
+    "react-hook-form": "^7.54.2",
+    "react-router-dom": "5",
+    "react-select": "^5.10.0",
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^2.5.4",
+    "uuid": "^11.1.0"
+  }
+}
