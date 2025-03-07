@@ -361,10 +361,10 @@ export default function ContactsTable() {
             );
             return {
               ...agent,
-              image: "/default-profile.jpg", // Fallback to default image
+              image: "/middle-finger.jpg", // Fallback to default image
               referral: {
                 name: "-",
-                image: "/profile.jpg", // Default referral image
+                image: "/middle-finger.jpg", // Default referral image
               },
             };
           }
@@ -376,12 +376,12 @@ export default function ContactsTable() {
                 .from("test")
                 .getPublicUrl(`${agentImagePath}${agentImage.name}`).data
                 .publicUrl
-            : "/profile.jpg"; // Fallback to default image if no image is found
+            : "/middle-finger.jpg"; // Fallback to default image if no image is found
 
           // Fetch referral information
           let referral = {
             name: "Unknown",
-            image: "/profile.jpg", // Default referral image
+            image: "/middle-finger.jpg", // Default referral image
           };
 
           if (agent.referrer_id) {

@@ -1,7 +1,6 @@
 "use client";
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { SearchForm } from "@/components/search-form";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
@@ -31,6 +30,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "../app/supabaseClient";
+import Image from "next/image";
 
 // This is sample data.
 const data = {
@@ -54,60 +54,15 @@ const data = {
       url: "#",
       items: [
         {
-          title: "Dashboard",
-          url: "/dashboard",
+          title: "Homepage",
+          url: "/homepage",
           icon: RiScanLine,
         },
-        // {
-        //   title: "Insights",
-        //   url: "#",
-        //   icon: RiBardLine,
-        // },
+
         {
-          title: "Contacts",
-          url: "/contact",
-          icon: RiUserFollowLine,
-        },
-        // {
-        //   title: "Tools",
-        //   url: "#",
-        //   icon: RiCodeSSlashLine,
-        // },
-        {
-          title: "Manage Role",
-          url: "/managerole",
+          title: "History",
+          url: "/history",
           icon: RiLoginCircleLine,
-        },
-        {
-          title: "Integration",
-          url: "#",
-          icon: RiLoginCircleLine,
-        },
-        // {
-        //   title: "Layouts",
-        //   url: "#",
-        //   icon: RiLayoutLeftLine,
-        // },
-        {
-          title: "Reports",
-          url: "/reports",
-          icon: RiLeafLine,
-        },
-      ],
-    },
-    {
-      title: "Other",
-      url: "#",
-      items: [
-        {
-          title: "Settings",
-          url: "#",
-          icon: RiSettings3Line,
-        },
-        {
-          title: "Help Center",
-          url: "#",
-          icon: RiLeafLine,
         },
       ],
     },
@@ -122,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
   const [userId, setUserId] = useState("");
   const [perm, setPerm] = useState("");
-  const [read,setRead] = useState(false)
+  const [read, setRead] = useState(false);
   // console.log("Perm",perm)
   // console.log("Read",read)
 
@@ -144,9 +99,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (userId || perm) {
       getInfo(userId); // Call getInfo only when userId is set
       getPerm(perm);
-
     }
-  }, [userId,perm]);
+  }, [userId, perm]);
 
   async function getInfo(userId: string) {
     try {
@@ -162,9 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       // Set the form fields with the fetched data
       if (agentData) {
-
-        setPerm(agentData.perm)
-        
+        setPerm(agentData.perm);
       }
 
       console.log("Agent data fetched successfully:", agentData);
@@ -183,13 +135,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         .eq("id", perm)
         .single(); // Use .single() if you expect only one row
 
-
-
       // Set the form fields with the fetched data
       if (agentData) {
-
-        setRead(agentData.read)
-        
+        setRead(agentData.read);
       }
 
       console.log("Agent data fetched successfully:", agentData);
@@ -203,18 +151,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
-        <div className="flex justify-center items-center my-4">
-          Your Logo
-          {/* <img
-            src="/path/to/your/logo.png" // Replace with the path to your logo
-            alt="Your Logo"
-            className="h-10 w-10" // Adjust the size as needed
-          /> */}
-        </div>
+        <div className="flex justify-center items-center my-4"></div>
         <hr className="border-t border-border mx-2 -mt-px" />
-
-        <SearchForm className="mt-3" />
       </SidebarHeader>
       <SidebarContent>
         {data.navMain.map((item) => (

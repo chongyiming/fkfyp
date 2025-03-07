@@ -20,19 +20,21 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+
+  const [successMessage, setSuccessMessage] = useState("");
   const getBaseUrl = () => {
     // Check if running in the browser
     if (typeof window !== "undefined") {
       return window.location.origin; // Returns the current origin (e.g., http://localhost:3000 or https://your-vercel-app.vercel.app)
     }
-  
+
     // Check if running on Vercel
     if (process.env.VERCEL_URL) {
       return `https://${process.env.VERCEL_URL}`; // Returns the Vercel deployment URL
     }
-  
+
     // Default to localhost for development
-    return "http://localhost:3001";
+    return "http://localhost:3002";
   };
   // Validate email and password
   const validateInputs = () => {
@@ -57,7 +59,6 @@ export default function Page() {
     if (!validateInputs()) return;
 
     try {
-      // Create auth account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -67,9 +68,14 @@ export default function Page() {
         setError(authError.message);
         return;
       }
+
+      // Set success message
+      setSuccessMessage("Please check your email to verify your account.");
+      setError(""); // Clear any previous error
     } catch (error) {
       console.error("Error creating account:", error);
       setError("An error occurred while creating the account.");
+      setSuccessMessage(""); // Clear any previous success message
     }
   };
 
@@ -92,44 +98,7 @@ export default function Page() {
 
       console.log("Sign in successful:", authData);
 
-      // Get the user ID from the session
-      const userId = authData.user.id;
-
-      // Check if user exists in Permissions table
-      const { data: permissionData, error: permissionError } = await supabase
-        .from("Agents")
-        .select("id, gmail")
-        .eq("gmail", email);
-
-      if (permissionError) {
-        setError(permissionError.message);
-        return;
-      }
-
-      // If user doesn't exist in Permissions table, insert their data
-      if (!permissionData || permissionData.length === 0) {
-        const { data: newPermissionData, error: newPermissionError } =
-          await supabase
-            .from("Agents")
-            .insert([{ gmail: email, perm: 0, user_id: userId, ren: true }]); // Now using userId from the session
-
-        if (newPermissionError) {
-          setError(newPermissionError.message);
-          return;
-        }
-
-        console.log(
-          "User data inserted into Permissions table:",
-          newPermissionData
-        );
-        router.push("/dashboard");
-      } else {
-        console.log(
-          "User already exists in Permissions table:",
-          permissionData
-        );
-        router.push("/dashboard");
-      }
+      router.push("/homepage");
     } catch (error) {
       console.error("Error signing in:", error);
       setError("An error occurred while signing in.");
@@ -141,12 +110,12 @@ export default function Page() {
       setError("Please enter your email address.");
       return;
     }
-  
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${getBaseUrl()}/reset-password`, // Dynamically set the redirect URL
       });
-  
+
       if (error) {
         setError(error.message);
       } else {
@@ -217,16 +186,16 @@ export default function Page() {
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="flex justify-between gap-2">
-          <a
-  className="text-sm underline hover:no-underline"
-  href="#"
-  onClick={(e) => {
-    e.preventDefault();
-    handleForgotPassword();
-  }}
->
-  Forgot password?
-</a>
+            <a
+              className="text-sm underline hover:no-underline"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleForgotPassword();
+              }}
+            >
+              Forgot password?
+            </a>
           </div>
           <Button type="submit" className="w-full">
             Sign in
@@ -237,13 +206,19 @@ export default function Page() {
           <span className="text-xs text-muted-foreground">Or</span>
         </div>
 
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleCreateAccount}
-        >
-          Create an account
-        </Button>
+        <div>
+          {/* Success message */}
+          {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+
+          {/* Create account button */}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleCreateAccount}
+          >
+            Create an account
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
