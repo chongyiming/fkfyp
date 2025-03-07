@@ -201,7 +201,7 @@ const Homepage = () => {
                   >
                     <FileUp className="h-8 w-8 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Upload required documents (Booking Form, ID Copy, etc.)
+                      Upload ECG data
                     </span>
                   </label>
                   {files.length > 0 && (
