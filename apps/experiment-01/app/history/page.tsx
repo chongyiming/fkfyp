@@ -29,6 +29,7 @@ type FileObject = {
 export default function Page() {
   const [files, setFiles] = useState<FileObject[]>([]);
   const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -44,6 +45,7 @@ export default function Page() {
 
       const { user } = JSON.parse(authToken);
       const userEmail = user.email;
+      setEmail(user.email);
 
       try {
         // Fetch files from Supabase Storage
@@ -81,31 +83,33 @@ export default function Page() {
   }, []);
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">
-        {/* Header */}
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <div className="flex flex-1 items-center gap-2 px-3">
-            <SidebarTrigger className="-ms-4" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    <RiScanLine size={22} aria-hidden="true" />
-                    <span className="sr-only">Homepage</span>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>History</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-      </SidebarInset>
-    </SidebarProvider>
+    email && (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">
+          {/* Header */}
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <SidebarTrigger className="-ms-4" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">
+                      <RiScanLine size={22} aria-hidden="true" />
+                      <span className="sr-only">Homepage</span>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>History</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          </header>
+        </SidebarInset>
+      </SidebarProvider>
+    )
   );
 }

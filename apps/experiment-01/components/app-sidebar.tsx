@@ -73,6 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
   const handleSignOut = () => {
+    localStorage.removeItem("sb-onroqajvamgdrnrjnzzu-auth-token");
     router.push("/");
   };
   const [userId, setUserId] = useState("");

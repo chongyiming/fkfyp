@@ -155,97 +155,99 @@ const Homepage = () => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">
-        {/* Header */}
-        <header className="border-b">
-          {/* Top Row: Breadcrumb and User Dropdown */}
-          <div className="flex h-16 shrink-0 items-center gap-2">
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <SidebarTrigger className="-ms-4" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      <RiScanLine size={22} aria-hidden="true" />
-                      <span className="sr-only">Homepage</span>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Homepage</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
+    email && (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">
+          {/* Header */}
+          <header className="border-b">
+            {/* Top Row: Breadcrumb and User Dropdown */}
+            <div className="flex h-16 shrink-0 items-center gap-2">
+              <div className="flex flex-1 items-center gap-2 px-3">
+                <SidebarTrigger className="-ms-4" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem className="hidden md:block">
+                      <BreadcrumbLink href="#">
+                        <RiScanLine size={22} aria-hidden="true" />
+                        <span className="sr-only">Homepage</span>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Homepage</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Main Content */}
-        <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6">
-          <div className="h-[calc(100vh-4rem)] overflow-auto pb-6">
-            {/* CSS Grid Dashboard Layout */}
-            {/* Welcome Message */}
-            <div className="welcome">
-              <div
-                className={`dashboard-card ${bgColor} rounded-2xl border ${borderColor} p-8 shadow-lg`}
-              >
-                {/* Full-width greeting message */}
-                <div className="w-full">
-                  <h2 className={`text-xl font-semibold ${textColor}`}>
-                    {greeting}, {email}
-                  </h2>
-                </div>
+          {/* Main Content */}
+          <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6">
+            <div className="h-[calc(100vh-4rem)] overflow-auto pb-6">
+              {/* CSS Grid Dashboard Layout */}
+              {/* Welcome Message */}
+              <div className="welcome">
+                <div
+                  className={`dashboard-card ${bgColor} rounded-2xl border ${borderColor} p-8 shadow-lg`}
+                >
+                  {/* Full-width greeting message */}
+                  <div className="w-full">
+                    <h2 className={`text-xl font-semibold ${textColor}`}>
+                      {greeting}, {email}
+                    </h2>
+                  </div>
 
-                {/* File upload section moved below */}
-                <div className="mt-6 border-2 border-dashed border-muted p-6 rounded-lg text-center">
-                  <Input
-                    type="file"
-                    id="documents"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileChange}
-                    required
-                  />
-                  <label
-                    htmlFor="documents"
-                    className="cursor-pointer flex flex-col items-center gap-2"
+                  {/* File upload section moved below */}
+                  <div className="mt-6 border-2 border-dashed border-muted p-6 rounded-lg text-center">
+                    <Input
+                      type="file"
+                      id="documents"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileChange}
+                      required
+                    />
+                    <label
+                      htmlFor="documents"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <FileUp className="h-8 w-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Click to upload ECG data
+                      </span>
+                    </label>
+                    {files.length > 0 && (
+                      <div className="mt-4 text-sm text-muted-foreground">
+                        {files.length} file(s) selected
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload button */}
+                  <Button
+                    onClick={handleUpload}
+                    disabled={isUploading || files.length === 0}
+                    className="mt-4 w-full"
                   >
-                    <FileUp className="h-8 w-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Click to upload ECG data
-                    </span>
-                  </label>
-                  {files.length > 0 && (
-                    <div className="mt-4 text-sm text-muted-foreground">
-                      {files.length} file(s) selected
+                    {isUploading ? "Uploading..." : "Save files"}
+                  </Button>
+
+                  {/* Upload success message */}
+                  {uploadSuccess && (
+                    <div className="mt-4 text-sm text-green-500">
+                      Files uploaded successfully!
                     </div>
                   )}
                 </div>
-
-                {/* Upload button */}
-                <Button
-                  onClick={handleUpload}
-                  disabled={isUploading || files.length === 0}
-                  className="mt-4 w-full"
-                >
-                  {isUploading ? "Uploading..." : "Save files"}
-                </Button>
-
-                {/* Upload success message */}
-                {uploadSuccess && (
-                  <div className="mt-4 text-sm text-green-500">
-                    Files uploaded successfully!
-                  </div>
-                )}
               </div>
             </div>
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    )
   );
 };
 
