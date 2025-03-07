@@ -69,6 +69,7 @@ const Homepage = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [email, setEmail] = useState("");
   // Greeting based on time of day
   const currentHour = new Date().getHours();
   let greeting = "Good morning";
@@ -89,6 +90,19 @@ const Homepage = () => {
       setFiles(Array.from(e.target.files));
     }
   };
+
+  useEffect(() => {
+    const authToken = localStorage.getItem(
+      "sb-onroqajvamgdrnrjnzzu-auth-token"
+    );
+    if (!authToken) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    const { user } = JSON.parse(authToken);
+    setEmail(user.email);
+  }, []);
 
   const handleUpload = async () => {
     if (files.length === 0) {
@@ -181,7 +195,7 @@ const Homepage = () => {
                 {/* Full-width greeting message */}
                 <div className="w-full">
                   <h2 className={`text-xl font-semibold ${textColor}`}>
-                    {greeting}
+                    {greeting}, {email}
                   </h2>
                 </div>
 
