@@ -31,56 +31,56 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      // Get user email from local storage
-      const authToken = localStorage.getItem(
-        "sb-onroqajvamgdrnrjnzzu-auth-token"
-      );
-      if (!authToken) {
-        console.error("User not authenticated");
-        setLoading(false);
-        return;
-      }
+  // useEffect(() => {
+  //   const fetchFiles = async () => {
+  //     // Get user email from local storage
+  //     const authToken = localStorage.getItem(
+  //       "sb-onroqajvamgdrnrjnzzu-auth-token"
+  //     );
+  //     if (!authToken) {
+  //       console.error("User not authenticated");
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      const { user } = JSON.parse(authToken);
-      const userEmail = user.email;
-      setEmail(user.email);
+  //     const { user } = JSON.parse(authToken);
+  //     const userEmail = user.email;
+  //     setEmail(user.email);
 
-      try {
-        // Fetch files from Supabase Storage
-        const { data, error } = await supabase.storage
-          .from("file")
-          .list(userEmail, {
-            sortBy: { column: "created_at", order: "desc" }, // Sort by newest first
-          });
+  //     try {
+  //       // Fetch files from Supabase Storage
+  //       const { data, error } = await supabase.storage
+  //         .from("file")
+  //         .list(userEmail, {
+  //           sortBy: { column: "created_at", order: "desc" }, // Sort by newest first
+  //         });
 
-        if (error) {
-          console.error("Error fetching files:", error);
-        } else {
-          // Generate public URLs for each file
-          const filesWithUrls = data.map((file) => {
-            const publicUrl = supabase.storage
-              .from("file")
-              .getPublicUrl(`${userEmail}/${file.name}`).data.publicUrl;
+  //       if (error) {
+  //         console.error("Error fetching files:", error);
+  //       } else {
+  //         // Generate public URLs for each file
+  //         const filesWithUrls = data.map((file) => {
+  //           const publicUrl = supabase.storage
+  //             .from("file")
+  //             .getPublicUrl(`${userEmail}/${file.name}`).data.publicUrl;
 
-            return {
-              ...file,
-              publicUrl, // Add publicUrl to the file object
-            };
-          });
+  //           return {
+  //             ...file,
+  //             publicUrl, // Add publicUrl to the file object
+  //           };
+  //         });
 
-          setFiles(filesWithUrls as FileObject[]);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //         setFiles(filesWithUrls as FileObject[]);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchFiles();
-  }, []);
+  //   fetchFiles();
+  // }, []);
 
   return (
     email && (

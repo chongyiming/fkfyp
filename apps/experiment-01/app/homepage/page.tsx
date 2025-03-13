@@ -103,7 +103,6 @@ const Homepage = () => {
     const { user } = JSON.parse(authToken);
     setEmail(user.email);
   }, []);
-
   const handleUpload = async () => {
     if (files.length === 0) {
       alert("No files selected!");
@@ -126,6 +125,13 @@ const Homepage = () => {
     const userEmail = user.email;
 
     try {
+      // Generate a folder name based on the current date and time
+      const currentDate = new Date();
+      const folderName = currentDate.toISOString().replace(/[:.]/g, "-"); // Replace colons and periods with hyphens
+
+      // Construct the base path using the user's email and the folder name
+      const basePath = `${userEmail}/ECG/${folderName}/`;
+
       // Upload files to Supabase Storage
       for (const file of files) {
         // Sanitize the file name
@@ -133,7 +139,7 @@ const Homepage = () => {
           .replace(/\s+/g, "_") // Replace spaces with underscores
           .replace(/[^a-zA-Z0-9_.-]/g, ""); // Remove special characters
 
-        const filePath = `${userEmail}/${Date.now()}_${sanitizedFileName}`; // Use sanitized file name
+        const filePath = `${basePath}${sanitizedFileName}`; // Use sanitized file name
         const { data, error } = await supabase.storage
           .from("file") // Replace with your bucket name
           .upload(filePath, file);
@@ -209,6 +215,7 @@ const Homepage = () => {
                       className="hidden"
                       onChange={handleFileChange}
                       required
+                      accept=".jpg"
                     />
                     <label
                       htmlFor="documents"
