@@ -64,12 +64,19 @@ import "@/components/index.css";
 import { supabase } from "../supabaseClient";
 import { Input } from "@/components/ui/input";
 import { FileUp } from "lucide-react";
-
 const Homepage = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [email, setEmail] = useState("");
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [predictionResult, setPredictionResult] = useState<{
+    fileName: string;
+    norm_prob: number;
+    mi_prob: number;
+    confidence: number;
+    prediction: number;
+  } | null>(null);
   // Greeting based on time of day
   const currentHour = new Date().getHours();
   let greeting = "Good morning";
@@ -103,6 +110,55 @@ const Homepage = () => {
     const { user } = JSON.parse(authToken);
     setEmail(user.email);
   }, []);
+  const ResultModal = () => (
+    <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            Prediction Results for {predictionResult?.fileName}
+          </DialogTitle>
+          {/* <DialogDescription>Analysis of the ECG data</DialogDescription> */}
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Normal Probability</p>
+              <div className="flex items-center gap-2">
+                <Progress value={predictionResult?.norm_prob} className="h-2" />
+                <span className="text-sm text-muted-foreground">
+                  {predictionResult?.norm_prob}%
+                </span>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">MI Probability</p>
+              <div className="flex items-center gap-2">
+                <Progress value={predictionResult?.mi_prob} className="h-2" />
+                <span className="text-sm text-muted-foreground">
+                  {predictionResult?.mi_prob}%
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-1"></div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Prediction</p>
+            <p
+              className={`text-sm font-semibold ${
+                predictionResult?.prediction === 0
+                  ? "text-green-500"
+                  : "text-red-500"
+              }`}
+            >
+              {predictionResult?.prediction === 0
+                ? "Normal"
+                : "Myocardial Infarction"}
+            </p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
   const handleUpload = async () => {
     if (files.length === 0) {
       alert("No files selected!");
@@ -111,12 +167,27 @@ const Homepage = () => {
 
     setIsUploading(true);
 
+    // Check if any file is not a .dat file
+    const invalidFiles = files.filter((file) => !file.name.endsWith(".dat"));
+    if (invalidFiles.length > 0) {
+      alert("Error: Please upload .dat file");
+      setIsUploading(false);
+      setUploadSuccess(false);
+
+      return;
+    } else if (files.length > 1) {
+      alert("Please only upload one file");
+      setIsUploading(false);
+      setUploadSuccess(false);
+      return;
+    }
+
     // Get user email from local storage
     const authToken = localStorage.getItem(
       "sb-onroqajvamgdrnrjnzzu-auth-token"
     );
     if (!authToken) {
-      console.error("User not authenticated");
+      alert("Error: User not authenticated");
       setIsUploading(false);
       return;
     }
@@ -125,36 +196,60 @@ const Homepage = () => {
     const userEmail = user.email;
 
     try {
-      // Generate a folder name based on the current date and time
       const currentDate = new Date();
-      const folderName = currentDate.toISOString().replace(/[:.]/g, "-"); // Replace colons and periods with hyphens
-
-      // Construct the base path using the user's email and the folder name
+      const folderName = currentDate.toISOString().replace(/[:.]/g, "-");
       const basePath = `${userEmail}/ECG/${folderName}/`;
 
-      // Upload files to Supabase Storage
       for (const file of files) {
-        // Sanitize the file name
         const sanitizedFileName = file.name
-          .replace(/\s+/g, "_") // Replace spaces with underscores
-          .replace(/[^a-zA-Z0-9_.-]/g, ""); // Remove special characters
+          .replace(/\s+/g, "_")
+          .replace(/[^a-zA-Z0-9_.-]/g, "");
 
-        const filePath = `${basePath}${sanitizedFileName}`; // Use sanitized file name
+        const filePath = `${basePath}${sanitizedFileName}`;
         const { data, error } = await supabase.storage
-          .from("file") // Replace with your bucket name
+          .from("file")
           .upload(filePath, file);
 
         if (error) {
-          console.error("Error uploading file:", error);
-        } else {
-          console.log("File uploaded successfully:", data);
+          alert(`Error uploading file ${file.name}: ${error.message}`);
+          continue;
+        }
+
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error(`API call failed with status ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("Prediction result:", result);
+
+          // Show success popup with formatted results
+          // Replace the success alert in handleUpload with:
+          setPredictionResult({
+            fileName: file.name,
+            norm_prob: result.norm_prob,
+            mi_prob: result.mi_prob,
+            confidence: result.confidence,
+            prediction: result.prediction,
+          });
+          setIsResultModalOpen(true);
+        } catch (apiError) {
+          alert(`Error processing ${file.name}: ${apiError}`);
         }
       }
 
       setUploadSuccess(true);
-      setFiles([]); // Clear selected files after upload
+      setFiles([]);
     } catch (error) {
-      console.error("Upload failed:", error);
+      alert(`Upload failed: ${error}`);
     } finally {
       setIsUploading(false);
     }
@@ -215,7 +310,7 @@ const Homepage = () => {
                       className="hidden"
                       onChange={handleFileChange}
                       required
-                      accept=".jpg"
+                      accept=".dat"
                     />
                     <label
                       htmlFor="documents"
@@ -245,7 +340,7 @@ const Homepage = () => {
                   {/* Upload success message */}
                   {uploadSuccess && (
                     <div className="mt-4 text-sm text-green-500">
-                      Files uploaded successfully!
+                      File & Result saved successfully!
                     </div>
                   )}
                 </div>
@@ -253,6 +348,7 @@ const Homepage = () => {
             </div>
           </div>
         </SidebarInset>
+        <ResultModal />
       </SidebarProvider>
     )
   );
