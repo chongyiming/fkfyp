@@ -240,6 +240,17 @@ const Homepage = () => {
             confidence: result.confidence,
             prediction: result.prediction,
           });
+          const { error: insertError } = await supabase.from("history").insert({
+            email: userEmail,
+            file: filePath,
+            norm_prob: result.norm_prob,
+            mi_prob: result.mi_prob,
+            class: result.prediction === 0 ? "NORM" : "MI",
+          });
+          if (insertError) {
+            console.error("Error inserting into history:", insertError);
+            // Handle the error appropriately
+          }
           setIsResultModalOpen(true);
         } catch (apiError) {
           alert(`Error processing ${file.name}: ${apiError}`);
