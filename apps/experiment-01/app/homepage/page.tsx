@@ -67,6 +67,8 @@ import { Input } from "@/components/ui/input";
 import { FileUp } from "lucide-react";
 import DisplayCards from "@/components/display-cards";
 import { Sparkles } from "lucide-react";
+import styles from "./styles.module.scss";
+import { get } from "http";
 const Homepage = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -80,38 +82,13 @@ const Homepage = () => {
     confidence: number;
     prediction: number;
   } | null>(null);
-  const defaultCards = [
-    {
-      icon: <Sparkles className="size-4 text-blue-300" />,
-      title: "Featured",
-      description: "Discover amazing content",
-      date: "Just now",
-      iconClassName: "text-blue-500",
-      titleClassName: "text-blue-500",
-      className:
-        "[grid-area:stack] hover:-translate-y-10 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0",
-    },
-    {
-      icon: <Sparkles className="size-4 text-blue-300" />,
-      title: "Popular",
-      description: "Trending this week",
-      date: "2 days ago",
-      iconClassName: "text-blue-500",
-      titleClassName: "text-blue-500",
-      className:
-        "[grid-area:stack] translate-x-12 translate-y-10 hover:-translate-y-1 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0",
-    },
-    {
-      icon: <Sparkles className="size-4 text-blue-300" />,
-      title: "New",
-      description: "Latest updates and features",
-      date: "Today",
-      iconClassName: "text-blue-500",
-      titleClassName: "text-blue-500",
-      className:
-        "[grid-area:stack] translate-x-24 translate-y-20 hover:translate-y-10",
-    },
-  ];
+  const [history, setHistory] = useState<Array<{
+    created_at: string;
+    norm_prob: number;
+    mi_prob: number;
+    class: string;
+    file: string;
+  }> | null>(null);
   // Greeting based on time of day
   const currentHour = new Date().getHours();
   let greeting = "Good morning";
@@ -144,7 +121,23 @@ const Homepage = () => {
 
     const { user } = JSON.parse(authToken);
     setEmail(user.email);
+    getHistory(user.email);
   }, []);
+
+  async function getHistory(email: any) {
+    const { data, error } = await supabase
+      .from("history")
+      .select("*")
+      .eq("email", email)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+    console.log("history", data);
+    setHistory(data);
+  }
+
   const ResultModal = () => (
     <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
       <DialogContent className="sm:max-w-[425px]">
@@ -298,6 +291,7 @@ const Homepage = () => {
       alert(`Upload failed: ${error}`);
     } finally {
       setIsUploading(false);
+      getHistory(email);
     }
   };
 
@@ -391,9 +385,107 @@ const Homepage = () => {
                   )}
                 </div>
               </div>
-              <div className="flex min-h-[400px] w-full items-center justify-center py-20">
-                <div className="w-full max-w-3xl">
-                  <DisplayCards cards={defaultCards} />
+              <div className={styles.parent}>
+                <h1>History</h1>
+                <div className={styles.mainContent}>
+                  <div>
+                    <div className={styles.cardList}>
+                      {history ? (
+                        history.length > 0 ? (
+                          history.map((item, index) => (
+                            <div
+                              key={index}
+                              className={`${styles.card} ${item.class === "NORM" ? styles.normal : styles.abnormal}`}
+                            >
+                              <div className={styles.cardHeader}>
+                                <div className={styles.statusIndicator}>
+                                  {item.class === "NORM" ? (
+                                    <CheckCircle
+                                      className={styles.successIcon}
+                                      size={18}
+                                    />
+                                  ) : (
+                                    <X className={styles.errorIcon} size={18} />
+                                  )}
+                                  <span>{item.class}</span>
+                                </div>
+                                <span className={styles.date}>
+                                  <CalendarDays
+                                    size={14}
+                                    className={styles.icon}
+                                  />
+                                  {new Date(
+                                    item.created_at
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+
+                              <div className={styles.probabilityRow}>
+                                <div className={styles.probabilityItem}>
+                                  <div className={styles.probabilityLabel}>
+                                    <TrendingUp
+                                      size={14}
+                                      className={styles.icon}
+                                    />
+                                    <span>Normal</span>
+                                  </div>
+                                  <div className={styles.probabilityValue}>
+                                    {item.norm_prob.toFixed(2)}%
+                                  </div>
+                                  <Progress
+                                    value={item.norm_prob}
+                                    className={`${styles.progressBar} ${styles.normalProgress}`}
+                                  />
+                                </div>
+
+                                <div className={styles.probabilityItem}>
+                                  <div className={styles.probabilityLabel}>
+                                    <TrendingUp
+                                      size={14}
+                                      className={styles.icon}
+                                    />
+                                    <span>MI</span>
+                                  </div>
+                                  <div className={styles.probabilityValue}>
+                                    {item.mi_prob.toFixed(2)}%
+                                  </div>
+                                  <Progress
+                                    value={item.mi_prob}
+                                    className={`${styles.progressBar} ${styles.abnormalProgress}`}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className={styles.time}>
+                                <div className={styles.clockTime}>
+                                  <Clock size={14} className={styles.icon} />
+                                  {new Date(
+                                    item.created_at
+                                  ).toLocaleTimeString()}
+                                </div>
+                                <p>
+                                  <strong>File:</strong>{" "}
+                                  {item.file.split("/").pop()}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className={styles.emptyState}>
+                            <FileText size={32} className={styles.emptyIcon} />
+                            <h2>No history found</h2>
+                            <p>Upload your first ECG to see results here</p>
+                          </div>
+                        )
+                      ) : (
+                        <div className={styles.loadingState}>
+                          <div className={styles.spinner}></div>
+                          <h2>Loading your history</h2>
+                          <p>Please wait while we load your data</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

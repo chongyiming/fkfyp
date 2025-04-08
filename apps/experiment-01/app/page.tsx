@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState } from "react";
+import { useId, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,17 @@ export default function Page() {
     // Default to localhost for development
     return "http://localhost:3002";
   };
+
+  useEffect(() => {
+    const authToken = localStorage.getItem(
+      "sb-onroqajvamgdrnrjnzzu-auth-token"
+    );
+    if (!authToken) {
+      console.error("User not authenticated");
+      return;
+    }
+    router.push("/homepage");
+  }, []);
   // Validate email and password
   const validateInputs = () => {
     if (!email || !password) {
