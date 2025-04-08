@@ -20,7 +20,7 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const getBaseUrl = () => {
     // Check if running in the browser
@@ -43,6 +43,7 @@ export default function Page() {
     );
     if (!authToken) {
       console.error("User not authenticated");
+      setIsLoading(true);
       return;
     }
     router.push("/homepage");
@@ -138,99 +139,103 @@ export default function Page() {
     }
   };
   return (
-    <Dialog open={true}>
-      <DialogContent>
-        <div className="flex flex-col items-center gap-2">
-          <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border"
-            aria-hidden="true"
-          >
-            <svg
-              className="stroke-zinc-800 dark:stroke-zinc-100"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 32 32"
+    isLoading && (
+      <Dialog open={true}>
+        <DialogContent>
+          <div className="flex flex-col items-center gap-2">
+            <div
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border"
               aria-hidden="true"
             >
-              <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
-            </svg>
-          </div>
-          <DialogHeader>
-            <DialogTitle className="sm:text-center">Welcome back</DialogTitle>
-            <DialogDescription className="sm:text-center">
-              Enter your credentials to login to your account.
-            </DialogDescription>
-          </DialogHeader>
-        </div>
-
-        <form
-          className="space-y-5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSignIn();
-          }}
-        >
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor={`${id}-email`}>Email</Label>
-              <Input
-                id={`${id}-email`}
-                placeholder="Enter your gmail"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <svg
+                className="stroke-zinc-800 dark:stroke-zinc-100"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 32 32"
+                aria-hidden="true"
+              >
+                <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
+              </svg>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor={`${id}-password`}>Password</Label>
-              <Input
-                id={`${id}-password`}
-                placeholder="Enter your password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            <DialogHeader>
+              <DialogTitle className="sm:text-center">Welcome back</DialogTitle>
+              <DialogDescription className="sm:text-center">
+                Enter your credentials to login to your account.
+              </DialogDescription>
+            </DialogHeader>
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <div className="flex justify-between gap-2">
-            <a
-              className="text-sm underline hover:no-underline"
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleForgotPassword();
-              }}
-            >
-              Forgot password?
-            </a>
-          </div>
-          <Button type="submit" className="w-full">
-            Sign in
-          </Button>
-        </form>
 
-        <div className="flex items-center gap-3 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-          <span className="text-xs text-muted-foreground">Or</span>
-        </div>
-
-        <div>
-          {/* Success message */}
-          {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-
-          {/* Create account button */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleCreateAccount}
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSignIn();
+            }}
           >
-            Create an account
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor={`${id}-email`}>Email</Label>
+                <Input
+                  id={`${id}-email`}
+                  placeholder="Enter your gmail"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`${id}-password`}>Password</Label>
+                <Input
+                  id={`${id}-password`}
+                  placeholder="Enter your password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <div className="flex justify-between gap-2">
+              <a
+                className="text-sm underline hover:no-underline"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleForgotPassword();
+                }}
+              >
+                Forgot password?
+              </a>
+            </div>
+            <Button type="submit" className="w-full">
+              Sign in
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-3 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+            <span className="text-xs text-muted-foreground">Or</span>
+          </div>
+
+          <div>
+            {/* Success message */}
+            {successMessage && (
+              <p style={{ color: "green" }}>{successMessage}</p>
+            )}
+
+            {/* Create account button */}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleCreateAccount}
+            >
+              Create an account
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
   );
 }
