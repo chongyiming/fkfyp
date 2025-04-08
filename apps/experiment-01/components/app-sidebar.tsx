@@ -58,12 +58,6 @@ const data = {
           url: "/homepage",
           icon: RiScanLine,
         },
-
-        {
-          title: "History",
-          url: "/history",
-          icon: RiLoginCircleLine,
-        },
       ],
     },
   ],
