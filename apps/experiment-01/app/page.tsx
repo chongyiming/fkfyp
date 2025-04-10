@@ -42,7 +42,7 @@ export default function Page() {
       "sb-onroqajvamgdrnrjnzzu-auth-token"
     );
     if (!authToken) {
-      console.error("User not authenticated");
+      console.log("User not authenticated");
       setIsLoading(true);
       return;
     }

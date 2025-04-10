@@ -326,11 +326,11 @@ const Homepage = () => {
           </header>
 
           {/* Main Content */}
-          <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6">
+          <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6 relative">
             <div className="h-[calc(100vh-4rem)] overflow-auto pb-6">
               {/* CSS Grid Dashboard Layout */}
-              {/* Welcome Message */}
-              <div className="welcome">
+              {/* Welcome Message - Now with fixed positioning */}
+              <div className="welcome sticky top-0 z-10 mb-4">
                 <div
                   className={`dashboard-card ${bgColor} rounded-2xl border ${borderColor} p-8 shadow-lg`}
                 >

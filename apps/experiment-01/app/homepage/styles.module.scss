@@ -184,3 +184,25 @@
     transform: rotate(360deg);
   }
 }
+
+/* Add these global styles for the welcome section */
+.welcome {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: inherit;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+
+  /* Optional: add a subtle shadow to separate it from scrolled content */
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.05), transparent);
+    pointer-events: none;
+  }
+}
