@@ -58,6 +58,11 @@ const data = {
           url: "/homepage",
           icon: RiScanLine,
         },
+        {
+          title: "ECG Chart",
+          url: "/ecg",
+          icon: RiBardLine,
+        },
       ],
     },
   ],
