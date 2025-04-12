@@ -69,6 +69,9 @@ import DisplayCards from "@/components/display-cards";
 import { Sparkles } from "lucide-react";
 import styles from "./styles.module.scss";
 import { get } from "http";
+import ECGChartDisplay from "@/components/zoomable-linecharts";
+import dynamic from "next/dynamic";
+
 const Homepage = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -81,6 +84,7 @@ const Homepage = () => {
     mi_prob: number;
     confidence: number;
     prediction: number;
+    ecg_data: Array<Array<number>>;
   } | null>(null);
   const [history, setHistory] = useState<Array<{
     created_at: string;
@@ -110,6 +114,13 @@ const Homepage = () => {
     }
   };
 
+  const ECGChartDisplay = dynamic(
+    () => import("@/components/zoomable-linecharts"),
+    {
+      ssr: false,
+      loading: () => <div>Loading ECG charts...</div>,
+    }
+  );
   useEffect(() => {
     const authToken = localStorage.getItem(
       "sb-onroqajvamgdrnrjnzzu-auth-token"
@@ -140,12 +151,11 @@ const Homepage = () => {
 
   const ResultModal = () => (
     <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>
             Prediction Results for {predictionResult?.fileName}
           </DialogTitle>
-          {/* <DialogDescription>Analysis of the ECG data</DialogDescription> */}
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
@@ -168,7 +178,6 @@ const Homepage = () => {
               </div>
             </div>
           </div>
-          <div className="space-y-1"></div>
           <div className="space-y-1">
             <p className="text-sm font-medium">Prediction</p>
             <p
@@ -183,6 +192,17 @@ const Homepage = () => {
                 : "Myocardial Infarction"}
             </p>
           </div>
+
+          {/* ECG Display Section */}
+          {predictionResult?.ecg_data && (
+            <div className="mt-6">
+              <h3 className="text-lg font-medium mb-4">12-Lead ECG</h3>
+              <ECGChartDisplay
+                ecgData={predictionResult.ecg_data}
+                sampleRate={100}
+              />
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
@@ -267,6 +287,7 @@ const Homepage = () => {
             mi_prob: result.mi_prob,
             confidence: result.confidence,
             prediction: result.prediction,
+            ecg_data: result.ecg_data,
           });
           const { error: insertError } = await supabase.from("history").insert({
             email: userEmail,

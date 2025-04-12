@@ -17,6 +17,12 @@ importers:
       '@types/react-router-dom':
         specifier: ^5.3.3
         version: 5.3.3
+      chart.js:
+        specifier: ^4.4.8
+        version: 4.4.8
+      chartjs-plugin-zoom:
+        specifier: ^2.2.0
+        version: 2.2.0(chart.js@4.4.8)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -26,6 +32,9 @@ importers:
       framer-motion:
         specifier: ^12.4.10
         version: 12.4.10(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react-chartjs-2:
+        specifier: ^5.3.0
+        version: 5.3.0(chart.js@4.4.8)(react@19.0.0)
       react-hook-form:
         specifier: ^7.54.2
         version: 7.54.2(react@19.0.0)
@@ -563,6 +572,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@kurkle/color@0.3.4':
+    resolution: {integrity: sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==}
 
   '@next/env@15.1.0':
     resolution: {integrity: sha512-UcCO481cROsqJuszPPXJnb7GGuLq617ve4xuAyyNG4VSSocJNtMU5Fsx+Lp6mlN8c7W58aZLc5y6D/2xNmaK+w==}
@@ -1358,6 +1370,9 @@ packages:
   '@types/glob@7.2.0':
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
 
+  '@types/hammerjs@2.0.46':
+    resolution: {integrity: sha512-ynRvcq6wvqexJ9brDMS4BnBLzmr0e14d6ZJTEShTBWKymQiHwlAyGu0ZPEFI2Fh1U53F7tN9ufClWM5KvqkKOw==}
+
   '@types/history@4.7.11':
     resolution: {integrity: sha512-qjDJRrmvBMiTx+jyLxvLfJU7UznFuokDv4f3WRuriHKERccVpFU+8XMQUAbDzoiJCsmexxRExQeMwwCdamSKDA==}
 
@@ -1710,6 +1725,15 @@ packages:
 
   chardet@0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
+
+  chart.js@4.4.8:
+    resolution: {integrity: sha512-IkGZlVpXP+83QpMm4uxEiGqSI7jFizwVtF3+n5Pc3k7sMO+tkd0qxh2OzLhenM0K80xtmAONWGBn082EiBQSDA==}
+    engines: {pnpm: '>=8'}
+
+  chartjs-plugin-zoom@2.2.0:
+    resolution: {integrity: sha512-in6kcdiTlP6npIVLMd4zXZ08PDUXC52gZ4FAy5oyjk1zX3gKarXMAof7B9eFiisf9WOC3bh2saHg+J5WtLXZeA==}
+    peerDependencies:
+      chart.js: '>=3.2.0'
 
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -2353,6 +2377,10 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
+
+  hammerjs@2.0.8:
+    resolution: {integrity: sha512-tSQXBXS/MWQOn/RKckawJ61vvsDpCom87JgxiYdGwHdOa0ht0vzUWDlfioofFCRU0L+6NGDt6XzbgoJvZkMeRQ==}
+    engines: {node: '>=0.8.0'}
 
   handlebars@4.7.8:
     resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
@@ -3068,6 +3096,12 @@ packages:
   rc@1.2.8:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
+
+  react-chartjs-2@5.3.0:
+    resolution: {integrity: sha512-UfZZFnDsERI3c3CZGxzvNJd02SHjaSJ8kgW1djn65H1KK8rehwTjyrRKOG3VTMG8wtHZ5rgAO5oTHtHi9GCCmw==}
+    peerDependencies:
+      chart.js: ^4.1.1
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react-dom@19.0.0:
     resolution: {integrity: sha512-4GV5sHFG0e/0AD4X+ySy6UJd3jVl1iNsNHdpad0qhABJ11twS3TTBnseqsKurKcsNqCEFeGL3uLpVChpIO3QfQ==}
@@ -4085,6 +4119,8 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
+  '@kurkle/color@0.3.4': {}
+
   '@next/env@15.1.0': {}
 
   '@next/eslint-plugin-next@15.1.0':
@@ -4897,6 +4933,8 @@ snapshots:
       '@types/minimatch': 5.1.2
       '@types/node': 22.10.2
 
+  '@types/hammerjs@2.0.46': {}
+
   '@types/history@4.7.11': {}
 
   '@types/inquirer@6.5.0':
@@ -5362,6 +5400,16 @@ snapshots:
       upper-case-first: 1.1.2
 
   chardet@0.7.0: {}
+
+  chart.js@4.4.8:
+    dependencies:
+      '@kurkle/color': 0.3.4
+
+  chartjs-plugin-zoom@2.2.0(chart.js@4.4.8):
+    dependencies:
+      '@types/hammerjs': 2.0.46
+      chart.js: 4.4.8
+      hammerjs: 2.0.8
 
   chokidar@3.6.0:
     dependencies:
@@ -6148,6 +6196,8 @@ snapshots:
 
   graphemer@1.4.0: {}
 
+  hammerjs@2.0.8: {}
+
   handlebars@4.7.8:
     dependencies:
       minimist: 1.2.8
@@ -6897,6 +6947,11 @@ snapshots:
       ini: 1.3.8
       minimist: 1.2.8
       strip-json-comments: 2.0.1
+
+  react-chartjs-2@5.3.0(chart.js@4.4.8)(react@19.0.0):
+    dependencies:
+      chart.js: 4.4.8
+      react: 19.0.0
 
   react-dom@19.0.0(react@19.0.0):
     dependencies:
