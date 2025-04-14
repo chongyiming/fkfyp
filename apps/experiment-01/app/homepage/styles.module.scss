@@ -1,5 +1,7 @@
 .parent {
   margin-top: 2rem;
+  width: 90%;
+  justify-self: center;
 
   h1 {
     font-size: 1.5rem;
@@ -73,52 +75,52 @@
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
-
 .probabilityRow {
   display: flex;
-  flex-direction: column;
+  justify-self: center;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin: 1rem 0;
 }
 
-.probabilityItem {
+.ringContainer {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.ringBackground {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid #e5e7eb; /* light gray for background */
+}
+
+.ringFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid;
+  transition: all 0.3s ease;
+  transform: rotate(-90deg);
+}
+
+.ringCenter {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-}
-
-.probabilityLabel {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  justify-content: center;
 }
 
-.probabilityValue {
-  font-weight: 600;
-  font-size: 1.1rem;
+.ringValue {
+  font-size: 1.25rem;
+  font-weight: bold;
 }
 
-.progressBar {
-  height: 6px;
-  border-radius: 3px;
-
-  &.normalProgress {
-    background: #d1fae5;
-
-    > div {
-      background: #10b981;
-    }
-  }
-
-  &.abnormalProgress {
-    background: #fee2e2;
-
-    > div {
-      background: #ef4444;
-    }
-  }
+.ringLabel {
+  font-size: 0.75rem;
+  color: #6b7280; /* gray-500 */
 }
 
 .time {

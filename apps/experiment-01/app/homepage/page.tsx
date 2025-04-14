@@ -445,38 +445,48 @@ const Homepage = () => {
                               </div>
 
                               <div className={styles.probabilityRow}>
-                                <div className={styles.probabilityItem}>
-                                  <div className={styles.probabilityLabel}>
-                                    <TrendingUp
-                                      size={14}
-                                      className={styles.icon}
+                                {/* Normal Probability Ring */}
+                                <div className={styles.probabilityRing}>
+                                  <div className={styles.ringContainer}>
+                                    <div className={styles.ringBackground} />
+                                    <div
+                                      className={styles.ringFill}
+                                      style={{
+                                        borderColor: "#10B981", // green for normal
+                                        clipPath: `polygon(0 0, 100% 0, 100% ${item.norm_prob}%, 0 ${item.norm_prob}%)`,
+                                      }}
                                     />
-                                    <span>Normal</span>
+                                    <div className={styles.ringCenter}>
+                                      <span className={styles.ringValue}>
+                                        {item.norm_prob.toFixed(0)}%
+                                      </span>
+                                      <span className={styles.ringLabel}>
+                                        Normal
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className={styles.probabilityValue}>
-                                    {item.norm_prob.toFixed(2)}%
-                                  </div>
-                                  <Progress
-                                    value={item.norm_prob}
-                                    className={`${styles.progressBar} ${styles.normalProgress}`}
-                                  />
                                 </div>
 
-                                <div className={styles.probabilityItem}>
-                                  <div className={styles.probabilityLabel}>
-                                    <TrendingUp
-                                      size={14}
-                                      className={styles.icon}
+                                {/* MI Probability Ring */}
+                                <div className={styles.probabilityRing}>
+                                  <div className={styles.ringContainer}>
+                                    <div className={styles.ringBackground} />
+                                    <div
+                                      className={styles.ringFill}
+                                      style={{
+                                        borderColor: "#EF4444", // red for MI
+                                        clipPath: `polygon(0 0, 100% 0, 100% ${item.mi_prob}%, 0 ${item.mi_prob}%)`,
+                                      }}
                                     />
-                                    <span>MI</span>
+                                    <div className={styles.ringCenter}>
+                                      <span className={styles.ringValue}>
+                                        {item.mi_prob.toFixed(0)}%
+                                      </span>
+                                      <span className={styles.ringLabel}>
+                                        MI
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className={styles.probabilityValue}>
-                                    {item.mi_prob.toFixed(2)}%
-                                  </div>
-                                  <Progress
-                                    value={item.mi_prob}
-                                    className={`${styles.progressBar} ${styles.abnormalProgress}`}
-                                  />
                                 </div>
                               </div>
 
