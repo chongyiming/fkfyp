@@ -94,7 +94,7 @@ interface HistoryItem {
   email?: string;
 }
 
-const Homepage = () => {
+const Admin = () => {
   const [email, setEmail] = useState("");
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [predictionResult, setPredictionResult] = useState<ECGData | null>(
@@ -105,6 +105,7 @@ const Homepage = () => {
     null
   );
   const [activeModalData, setActiveModalData] = useState<ECGData | null>(null);
+  const [perm, setPermission] = useState(0);
 
   const ECGChartDisplayComponent = dynamic(
     () => import("@/components/zoomable-linecharts"),
@@ -125,8 +126,36 @@ const Homepage = () => {
 
     const { user } = JSON.parse(authToken);
     setEmail(user.email);
+    getPerm(user.email);
+
     getHistory(user.email);
   }, []);
+
+  async function getPerm(email: string) {
+    try {
+      const { data: agentData, error: agentError } = await supabase
+        .from("permission")
+        .select("perm")
+        .eq("email", email)
+        .single(); // Use .single() if you expect only one row
+
+      // Set the form fields with the fetched data
+      if (agentData) {
+        setPermission(agentData.perm);
+        console.log(
+          "Current permission:",
+          agentData.perm,
+          typeof agentData.perm
+        );
+      }
+
+      console.log("Agent data fetched successfully:", agentData);
+      return agentData;
+    } catch (error) {
+      console.error("Error fetching agent info:", error);
+      throw error;
+    }
+  }
 
   async function getHistory(email: string) {
     const { data, error } = await supabase
@@ -201,246 +230,246 @@ const Homepage = () => {
     if (!dataToDisplay) return null;
 
     return (
-      <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
-        <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
-          <DialogHeader>
-            <DialogTitle>ECG Results for {dataToDisplay.fileName}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Normal Probability</p>
-                <div className="flex items-center gap-2">
-                  <Progress value={dataToDisplay.norm_prob} className="h-2" />
-                  <span className="text-sm text-muted-foreground">
-                    {dataToDisplay.norm_prob}%
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">MI Probability</p>
-                <div className="flex items-center gap-2">
-                  <Progress value={dataToDisplay.mi_prob} className="h-2" />
-                  <span className="text-sm text-muted-foreground">
-                    {dataToDisplay.mi_prob}%
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Prediction</p>
-              <p
-                className={`text-sm font-semibold ${
-                  dataToDisplay.prediction === 0
-                    ? "text-green-500"
-                    : "text-red-500"
-                }`}
-              >
-                {dataToDisplay.prediction === 0
-                  ? "Normal"
-                  : "Myocardial Infarction"}
-              </p>
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-sm font-medium mb-2">
-                Select Leads to Display
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {leadNames.map((name, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-2 cursor-pointer"
-                    onClick={() => toggleLead(index)}
-                  >
-                    {selectedLeads.includes(index) ? (
-                      <CheckSquare className="h-4 w-4 text-primary" />
-                    ) : (
-                      <Square className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <label className="text-sm font-medium leading-none cursor-pointer">
-                      {name}
-                    </label>
+      perm === 1 && (
+        <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
+          <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>
+                ECG Results for {dataToDisplay.fileName}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Normal Probability</p>
+                  <div className="flex items-center gap-2">
+                    <Progress value={dataToDisplay.norm_prob} className="h-2" />
+                    <span className="text-sm text-muted-foreground">
+                      {dataToDisplay.norm_prob}%
+                    </span>
                   </div>
-                ))}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">MI Probability</p>
+                  <div className="flex items-center gap-2">
+                    <Progress value={dataToDisplay.mi_prob} className="h-2" />
+                    <span className="text-sm text-muted-foreground">
+                      {dataToDisplay.mi_prob}%
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Prediction</p>
+                <p
+                  className={`text-sm font-semibold ${
+                    dataToDisplay.prediction === 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {dataToDisplay.prediction === 0
+                    ? "Normal"
+                    : "Myocardial Infarction"}
+                </p>
+              </div>
 
-            {/* ECG Display Section */}
-            {dataToDisplay.ecg_data && (
-              <div className="mt-6">
-                <h3 className="text-lg font-medium mb-4">12-Lead ECG</h3>
-                <ECGChartDisplayComponent
-                  ecgData={dataToDisplay.ecg_data}
-                  sampleRate={100}
-                  leadLabels={leadNames}
-                  visibleLeads={selectedLeads}
-                />
+              <div className="mt-4">
+                <h3 className="text-sm font-medium mb-2">
+                  Select Leads to Display
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {leadNames.map((name, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center space-x-2 cursor-pointer"
+                      onClick={() => toggleLead(index)}
+                    >
+                      {selectedLeads.includes(index) ? (
+                        <CheckSquare className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Square className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <label className="text-sm font-medium leading-none cursor-pointer">
+                        {name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+
+              {/* ECG Display Section */}
+              {dataToDisplay.ecg_data && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-4">12-Lead ECG</h3>
+                  <ECGChartDisplayComponent
+                    ecgData={dataToDisplay.ecg_data}
+                    sampleRate={100}
+                    leadLabels={leadNames}
+                    visibleLeads={selectedLeads}
+                  />
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )
     );
   };
 
+  if (perm !== 1) {
+    return;
+  }
+
   return (
-    email && (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">
-          {/* Header */}
-          <header className="border-b">
-            {/* Top Row: Breadcrumb and User Dropdown */}
-            <div className="flex h-16 shrink-0 items-center gap-2">
-              <div className="flex flex-1 items-center gap-2 px-3">
-                <SidebarTrigger className="-ms-4" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem className="hidden md:block">
-                      <BreadcrumbLink href="#">
-                        <RiHome2Line size={22} aria-hidden="true" />
-                        <span className="sr-only">Homepage</span>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator className="hidden md:block" />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Homepage</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">
+        {/* Header */}
+        <header className="border-b">
+          {/* Top Row: Breadcrumb and User Dropdown */}
+          <div className="flex h-16 shrink-0 items-center gap-2">
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <SidebarTrigger className="-ms-4" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">
+                      <RiHome2Line size={22} aria-hidden="true" />
+                      <span className="sr-only">Admin</span>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Admin</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Main Content */}
-          <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6 relative">
-            <div className="h-[calc(100vh-4rem)] overflow-auto pb-6">
-              {/* CSS Grid Dashboard Layout */}
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6 relative">
+          <div className="h-[calc(100vh-4rem)] overflow-auto pb-6">
+            {/* CSS Grid Dashboard Layout */}
 
-              <div className={styles.parent}>
-                <h1>Record</h1>
-                <div className={styles.mainContent}>
-                  <div>
-                    <div className={styles.cardList}>
-                      {history ? (
-                        history.length > 0 ? (
-                          history.map((item, index) => (
-                            <div
-                              key={index}
-                              className={`${styles.card} ${item.class === "NORM" ? styles.normal : styles.abnormal}`}
-                              onClick={() => handleViewHistoryItem(item)}
-                              style={{ cursor: "pointer" }} // Add pointer cursor to indicate clickable
-                            >
-                              <div className={styles.cardHeader}>
-                                <div className={styles.statusIndicator}>
-                                  {item.class === "NORM" ? (
-                                    <CheckCircle
-                                      className={styles.successIcon}
-                                      size={18}
-                                    />
-                                  ) : (
-                                    <X className={styles.errorIcon} size={18} />
-                                  )}
-                                  <span>{item.class}</span>
-                                </div>
-                                <span className={styles.date}>
-                                  <CalendarDays
-                                    size={14}
-                                    className={styles.icon}
+            <div className={styles.parent}>
+              <h1>Record</h1>
+              <div className={styles.mainContent}>
+                <div>
+                  <div className={styles.cardList}>
+                    {history ? (
+                      history.length > 0 ? (
+                        history.map((item, index) => (
+                          <div
+                            key={index}
+                            className={`${styles.card} ${item.class === "NORM" ? styles.normal : styles.abnormal}`}
+                            onClick={() => handleViewHistoryItem(item)}
+                            style={{ cursor: "pointer" }} // Add pointer cursor to indicate clickable
+                          >
+                            <div className={styles.cardHeader}>
+                              <div className={styles.statusIndicator}>
+                                {item.class === "NORM" ? (
+                                  <CheckCircle
+                                    className={styles.successIcon}
+                                    size={18}
                                   />
-                                  {new Date(
-                                    item.created_at
-                                  ).toLocaleDateString()}
-                                </span>
+                                ) : (
+                                  <X className={styles.errorIcon} size={18} />
+                                )}
+                                <span>{item.class}</span>
                               </div>
+                              <span className={styles.date}>
+                                <CalendarDays
+                                  size={14}
+                                  className={styles.icon}
+                                />
+                                {new Date(item.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
 
-                              <div className={styles.probabilityRow}>
-                                {/* Normal Probability Ring */}
-                                <div className={styles.probabilityRing}>
-                                  <div className={styles.ringContainer}>
-                                    <div className={styles.ringBackground} />
-                                    <div
-                                      className={styles.ringFill}
-                                      style={{
-                                        borderColor: "#10B981", // green for normal
-                                        clipPath: `polygon(0 0, 100% 0, 100% ${item.norm_prob}%, 0 ${item.norm_prob}%)`,
-                                      }}
-                                    />
-                                    <div className={styles.ringCenter}>
-                                      <span className={styles.ringValue}>
-                                        {item.norm_prob.toFixed(0)}%
-                                      </span>
-                                      <span className={styles.ringLabel}>
-                                        Normal
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* MI Probability Ring */}
-                                <div className={styles.probabilityRing}>
-                                  <div className={styles.ringContainer}>
-                                    <div className={styles.ringBackground} />
-                                    <div
-                                      className={styles.ringFill}
-                                      style={{
-                                        borderColor: "#EF4444", // red for MI
-                                        clipPath: `polygon(0 0, 100% 0, 100% ${item.mi_prob}%, 0 ${item.mi_prob}%)`,
-                                      }}
-                                    />
-                                    <div className={styles.ringCenter}>
-                                      <span className={styles.ringValue}>
-                                        {item.mi_prob.toFixed(0)}%
-                                      </span>
-                                      <span className={styles.ringLabel}>
-                                        MI
-                                      </span>
-                                    </div>
+                            <div className={styles.probabilityRow}>
+                              {/* Normal Probability Ring */}
+                              <div className={styles.probabilityRing}>
+                                <div className={styles.ringContainer}>
+                                  <div className={styles.ringBackground} />
+                                  <div
+                                    className={styles.ringFill}
+                                    style={{
+                                      borderColor: "#10B981", // green for normal
+                                      clipPath: `polygon(0 0, 100% 0, 100% ${item.norm_prob}%, 0 ${item.norm_prob}%)`,
+                                    }}
+                                  />
+                                  <div className={styles.ringCenter}>
+                                    <span className={styles.ringValue}>
+                                      {item.norm_prob.toFixed(0)}%
+                                    </span>
+                                    <span className={styles.ringLabel}>
+                                      Normal
+                                    </span>
                                   </div>
                                 </div>
                               </div>
 
-                              <div className={styles.time}>
-                                <div className={styles.clockTime}>
-                                  <Clock size={14} className={styles.icon} />
-                                  {new Date(
-                                    item.created_at
-                                  ).toLocaleTimeString()}
+                              {/* MI Probability Ring */}
+                              <div className={styles.probabilityRing}>
+                                <div className={styles.ringContainer}>
+                                  <div className={styles.ringBackground} />
+                                  <div
+                                    className={styles.ringFill}
+                                    style={{
+                                      borderColor: "#EF4444", // red for MI
+                                      clipPath: `polygon(0 0, 100% 0, 100% ${item.mi_prob}%, 0 ${item.mi_prob}%)`,
+                                    }}
+                                  />
+                                  <div className={styles.ringCenter}>
+                                    <span className={styles.ringValue}>
+                                      {item.mi_prob.toFixed(0)}%
+                                    </span>
+                                    <span className={styles.ringLabel}>MI</span>
+                                  </div>
                                 </div>
-                                <p>
-                                  <strong>File:</strong>{" "}
-                                  {item.file.split("/").pop()}
-                                </p>
                               </div>
                             </div>
-                          ))
-                        ) : (
-                          <div className={styles.emptyState}>
-                            <FileText size={32} className={styles.emptyIcon} />
-                            <h2>No history found</h2>
-                            <p>Upload your first ECG to see results here</p>
+
+                            <div className={styles.time}>
+                              <div className={styles.clockTime}>
+                                <Clock size={14} className={styles.icon} />
+                                {new Date(item.created_at).toLocaleTimeString()}
+                              </div>
+                              <p>
+                                <strong>File:</strong>{" "}
+                                {item.file.split("/").pop()}
+                              </p>
+                            </div>
                           </div>
-                        )
+                        ))
                       ) : (
-                        <div className={styles.loadingState}>
-                          <div className={styles.spinner}></div>
-                          <h2>Loading your history</h2>
-                          <p>Please wait while we load your data</p>
+                        <div className={styles.emptyState}>
+                          <FileText size={32} className={styles.emptyIcon} />
+                          <h2>No history found</h2>
+                          <p>Upload your first ECG to see results here</p>
                         </div>
-                      )}
-                    </div>
+                      )
+                    ) : (
+                      <div className={styles.loadingState}>
+                        <div className={styles.spinner}></div>
+                        <h2>Loading your history</h2>
+                        <p>Please wait while we load your data</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </SidebarInset>
-        <ResultModal />
-      </SidebarProvider>
-    )
+        </div>
+      </SidebarInset>
+      <ResultModal />
+    </SidebarProvider>
   );
 };
 
-export default Homepage;
+export default Admin;
