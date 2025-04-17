@@ -243,7 +243,16 @@ const Homepage = () => {
     if (!dataToDisplay) return null;
 
     return (
-      <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
+      <Dialog
+        open={isResultModalOpen}
+        onOpenChange={(open) => {
+          setIsResultModalOpen(open);
+          if (!open) {
+            // Modal is being closed, refresh the page
+            window.location.reload();
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>ECG Results for {dataToDisplay.fileName}</DialogTitle>
@@ -386,18 +395,18 @@ const Homepage = () => {
           formData.append("file", file);
 
           // Uncomment the appropriate endpoint
-          const response = await fetch(
-            "https://test-485822052532.asia-southeast1.run.app/predict",
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          // const response = await fetch(
+          //   "https://test-485822052532.asia-southeast1.run.app/predict",
+          //   {
+          //     method: "POST",
+          //     body: formData,
+          //   }
+          // );
 
-          // const response = await fetch("http://127.0.0.1:5000/predict", {
-          //   method: "POST",
-          //   body: formData,
-          // });
+          const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: formData,
+          });
 
           if (!response.ok) {
             throw new Error(`API call failed with status ${response.status}`);
@@ -416,11 +425,6 @@ const Homepage = () => {
             ecg_data: result.ecg_data,
           };
 
-          // Set prediction result and open modal
-          setPredictionResult(resultData);
-          setActiveModalData(resultData);
-          setIsResultModalOpen(true);
-
           // Store in database
           const { error: insertError } = await supabase.from("history").insert({
             email: userEmail,
@@ -434,6 +438,10 @@ const Homepage = () => {
           if (insertError) {
             console.error("Error inserting into history:", insertError);
           }
+          // Set prediction result and open modal
+          setPredictionResult(resultData);
+          setActiveModalData(resultData);
+          setIsResultModalOpen(true);
         } catch (apiError: any) {
           alert(`Error processing ${file.name}: ${apiError}`);
         }
@@ -445,7 +453,6 @@ const Homepage = () => {
       alert(`Upload failed: ${error}`);
     } finally {
       setIsUploading(false);
-      getHistory(email);
     }
   };
 
