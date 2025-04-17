@@ -52,10 +52,12 @@ const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
     "V5",
     "V6",
   ],
-  visibleLeads = Array.from({ length: 12 }, (_, i) => i), // Default to showing all leads
+  visibleLeads = Array.from({ length: 12 }, (_, i) => i),
 }) => {
-  const chartRefs = useRef<(HTMLCanvasElement | null)[]>([]);
-  const charts = useRef<(Chart<"line", number[], string> | null)[]>([]);
+  const chartRefs = useRef<Record<number, HTMLCanvasElement | null>>({});
+  const charts = useRef<Record<number, Chart<"line", number[], string> | null>>(
+    {}
+  );
 
   useEffect(() => {
     // Check if ecgData is defined and has data
@@ -67,85 +69,94 @@ const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
       (i / sampleRate).toFixed(2)
     );
 
-    // Initialize charts for visible leads only
-    visibleLeads.forEach((leadIndex, displayIndex) => {
-      const canvas = chartRefs.current[displayIndex];
+    // Initialize or update charts for all possible leads
+    leadLabels.forEach((_, leadIndex) => {
+      const canvas = chartRefs.current[leadIndex];
       if (!canvas) return;
 
-      // Destroy previous chart if it exists
-      if (charts.current[displayIndex]) {
-        charts.current[displayIndex]?.destroy();
-      }
+      // Only create chart if this lead is visible
+      if (visibleLeads.includes(leadIndex)) {
+        // Destroy previous chart if it exists
+        if (charts.current[leadIndex]) {
+          charts.current[leadIndex]?.destroy();
+        }
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-      charts.current[displayIndex] = new Chart<"line", number[], string>(ctx, {
-        type: "line",
-        data: {
-          labels: timeAxis,
-          datasets: [
-            {
-              label: leadLabels[leadIndex],
-              data: ecgData[leadIndex] || [], // Use the data from the correct lead
-              borderColor: "#3b82f6",
-              borderWidth: 1,
-              pointRadius: 0,
-              tension: 0,
-              fill: false,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            duration: 0,
-          },
-          plugins: {
-            zoom: {
-              pan: {
-                enabled: true,
-                mode: "x",
+        charts.current[leadIndex] = new Chart<"line", number[], string>(ctx, {
+          type: "line",
+          data: {
+            labels: timeAxis,
+            datasets: [
+              {
+                label: leadLabels[leadIndex],
+                data: ecgData[leadIndex] || [],
+                borderColor: "#3b82f6",
+                borderWidth: 1,
+                pointRadius: 0,
+                tension: 0,
+                fill: false,
               },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+              duration: 0,
+            },
+            plugins: {
               zoom: {
-                wheel: {
+                pan: {
                   enabled: true,
+                  mode: "x",
                 },
-                pinch: {
-                  enabled: true,
+                zoom: {
+                  wheel: {
+                    enabled: true,
+                  },
+                  pinch: {
+                    enabled: true,
+                  },
+                  mode: "x",
                 },
-                mode: "x",
+              },
+              legend: {
+                display: false,
               },
             },
-            legend: {
-              display: false,
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Time (s)",
+                },
+                ticks: {
+                  maxTicksLimit: 10,
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Amplitude (mV)",
+                },
+              },
             },
           },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: "Time (s)",
-              },
-              ticks: {
-                maxTicksLimit: 10,
-              },
-            },
-            y: {
-              title: {
-                display: true,
-                text: "Amplitude (mV)",
-              },
-            },
-          },
-        },
-      });
+        });
+      } else {
+        // Destroy chart if it exists but lead is not visible
+        if (charts.current[leadIndex]) {
+          charts.current[leadIndex]?.destroy();
+          charts.current[leadIndex] = null;
+        }
+      }
     });
 
     // Cleanup function
     return () => {
-      charts.current.forEach((chart) => {
+      Object.values(charts.current).forEach((chart) => {
         if (chart) {
           chart.destroy();
         }
@@ -153,21 +164,27 @@ const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
     };
   }, [ecgData, sampleRate, visibleLeads, leadLabels]);
 
-  // Early return if no data
   if (!ecgData || ecgData.length === 0) {
     return <div>No ECG data available</div>;
   }
 
   return (
     <div className="space-y-8 justify-self-center w-[95%]">
-      {visibleLeads.map((leadIndex, displayIndex) => (
-        <div key={leadIndex} className="bg-card rounded-lg p-4 border">
-          <h3 className="text-lg font-medium mb-2">{leadLabels[leadIndex]}</h3>
+      {/* Render all possible leads but only show visible ones */}
+      {leadLabels.map((label, leadIndex) => (
+        <div
+          key={leadIndex}
+          className="bg-card rounded-lg p-4 border"
+          style={{
+            display: visibleLeads.includes(leadIndex) ? "block" : "none",
+          }}
+        >
+          <h3 className="text-lg font-medium mb-2">{label}</h3>
           <div className="h-64">
             <canvas
               ref={(el) => {
                 if (el) {
-                  chartRefs.current[displayIndex] = el;
+                  chartRefs.current[leadIndex] = el;
                 }
               }}
             />
