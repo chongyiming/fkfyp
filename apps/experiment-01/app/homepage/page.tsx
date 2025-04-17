@@ -18,6 +18,8 @@ import {
   Plus,
   MoreHorizontal,
   ChevronDown,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import TransactionList from "@/components/transaction-list";
 import {
@@ -72,27 +74,42 @@ import { get } from "http";
 import ECGChartDisplay from "@/components/zoomable-linecharts";
 import dynamic from "next/dynamic";
 
+// Define TypeScript interfaces for our data
+interface ECGData {
+  fileName: string;
+  norm_prob: number;
+  mi_prob: number;
+  confidence: number;
+  prediction: number;
+  ecg_data: number[][];
+}
+
+interface HistoryItem {
+  created_at: string;
+  norm_prob: number;
+  mi_prob: number;
+  class: string;
+  file: string;
+  ecg_data: number[][];
+  email?: string;
+}
+
 const Homepage = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [email, setEmail] = useState("");
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
-  const [predictionResult, setPredictionResult] = useState<{
-    fileName: string;
-    norm_prob: number;
-    mi_prob: number;
-    confidence: number;
-    prediction: number;
-    ecg_data: Array<Array<number>>;
-  } | null>(null);
-  const [history, setHistory] = useState<Array<{
-    created_at: string;
-    norm_prob: number;
-    mi_prob: number;
-    class: string;
-    file: string;
-  }> | null>(null);
+  const [predictionResult, setPredictionResult] = useState<ECGData | null>(
+    null
+  );
+  const [history, setHistory] = useState<HistoryItem[] | null>(null);
+  const [viewingHistoryItem, setViewingHistoryItem] = useState<ECGData | null>(
+    null
+  );
+  const [activeModalData, setActiveModalData] = useState<ECGData | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+
   // Greeting based on time of day
   const currentHour = new Date().getHours();
   let greeting = "Good morning";
@@ -107,20 +124,21 @@ const Homepage = () => {
   const textColor = isDarkMode ? "text-white" : "text-gray-900";
   const gridColor = isDarkMode ? "#333" : "#e5e7eb";
   const labelColor = isDarkMode ? "#888" : "#666";
-  const [files, setFiles] = useState<File[]>([]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFiles(Array.from(e.target.files));
     }
   };
 
-  const ECGChartDisplay = dynamic(
+  const ECGChartDisplayComponent = dynamic(
     () => import("@/components/zoomable-linecharts"),
     {
       ssr: false,
       loading: () => <div>Loading ECG charts...</div>,
     }
   );
+
   useEffect(() => {
     const authToken = localStorage.getItem(
       "sb-onroqajvamgdrnrjnzzu-auth-token"
@@ -135,7 +153,7 @@ const Homepage = () => {
     getHistory(user.email);
   }, []);
 
-  async function getHistory(email: any) {
+  async function getHistory(email: string) {
     const { data, error } = await supabase
       .from("history")
       .select("*")
@@ -145,68 +163,153 @@ const Homepage = () => {
     if (error) {
       throw error;
     }
-    console.log("history", data);
-    setHistory(data);
+
+    // Parse the ECG data from string to JSON for each history item
+    const parsedData = data.map((item: any) => ({
+      ...item,
+      ecg_data: item.ecg_data ? JSON.parse(item.ecg_data) : [],
+    }));
+
+    console.log("history", parsedData);
+    setHistory(parsedData);
   }
 
-  const ResultModal = () => (
-    <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
-      <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
-        <DialogHeader>
-          <DialogTitle>
-            Prediction Results for {predictionResult?.fileName}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Normal Probability</p>
-              <div className="flex items-center gap-2">
-                <Progress value={predictionResult?.norm_prob} className="h-2" />
-                <span className="text-sm text-muted-foreground">
-                  {predictionResult?.norm_prob}%
-                </span>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">MI Probability</p>
-              <div className="flex items-center gap-2">
-                <Progress value={predictionResult?.mi_prob} className="h-2" />
-                <span className="text-sm text-muted-foreground">
-                  {predictionResult?.mi_prob}%
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Prediction</p>
-            <p
-              className={`text-sm font-semibold ${
-                predictionResult?.prediction === 0
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
-            >
-              {predictionResult?.prediction === 0
-                ? "Normal"
-                : "Myocardial Infarction"}
-            </p>
-          </div>
+  const handleViewHistoryItem = (item: HistoryItem) => {
+    const historyItemData: ECGData = {
+      fileName: item.file.split("/").pop() || "Unknown file",
+      norm_prob: item.norm_prob,
+      mi_prob: item.mi_prob,
+      confidence: Math.max(item.norm_prob, item.mi_prob),
+      prediction: item.class === "NORM" ? 0 : 1,
+      ecg_data: item.ecg_data,
+    };
 
-          {/* ECG Display Section */}
-          {predictionResult?.ecg_data && (
-            <div className="mt-6">
-              <h3 className="text-lg font-medium mb-4">12-Lead ECG</h3>
-              <ECGChartDisplay
-                ecgData={predictionResult.ecg_data}
-                sampleRate={100}
-              />
+    setViewingHistoryItem(historyItemData);
+    setActiveModalData(historyItemData);
+    setIsResultModalOpen(true);
+  };
+
+  const ResultModal = () => {
+    const dataToDisplay = activeModalData;
+
+    // State for selected leads
+    const [selectedLeads, setSelectedLeads] = useState<number[]>(
+      Array.from({ length: 12 }, (_, i) => i)
+    ); // Default all leads selected
+
+    // Lead names for display
+    const leadNames = [
+      "I",
+      "II",
+      "III",
+      "aVR",
+      "aVL",
+      "aVF",
+      "V1",
+      "V2",
+      "V3",
+      "V4",
+      "V5",
+      "V6",
+    ];
+
+    const toggleLead = (leadIndex: number) => {
+      if (selectedLeads.includes(leadIndex)) {
+        // Don't allow deselecting all leads
+        if (selectedLeads.length > 1) {
+          setSelectedLeads(selectedLeads.filter((i) => i !== leadIndex));
+        }
+      } else {
+        setSelectedLeads([...selectedLeads, leadIndex]);
+      }
+    };
+
+    if (!dataToDisplay) return null;
+
+    return (
+      <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
+        <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>ECG Results for {dataToDisplay.fileName}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Normal Probability</p>
+                <div className="flex items-center gap-2">
+                  <Progress value={dataToDisplay.norm_prob} className="h-2" />
+                  <span className="text-sm text-muted-foreground">
+                    {dataToDisplay.norm_prob}%
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">MI Probability</p>
+                <div className="flex items-center gap-2">
+                  <Progress value={dataToDisplay.mi_prob} className="h-2" />
+                  <span className="text-sm text-muted-foreground">
+                    {dataToDisplay.mi_prob}%
+                  </span>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Prediction</p>
+              <p
+                className={`text-sm font-semibold ${
+                  dataToDisplay.prediction === 0
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {dataToDisplay.prediction === 0
+                  ? "Normal"
+                  : "Myocardial Infarction"}
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <h3 className="text-sm font-medium mb-2">
+                Select Leads to Display
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {leadNames.map((name, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center space-x-2 cursor-pointer"
+                    onClick={() => toggleLead(index)}
+                  >
+                    {selectedLeads.includes(index) ? (
+                      <CheckSquare className="h-4 w-4 text-primary" />
+                    ) : (
+                      <Square className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <label className="text-sm font-medium leading-none cursor-pointer">
+                      {name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ECG Display Section */}
+            {dataToDisplay.ecg_data && (
+              <div className="mt-6">
+                <h3 className="text-lg font-medium mb-4">12-Lead ECG</h3>
+                <ECGChartDisplayComponent
+                  ecgData={dataToDisplay.ecg_data}
+                  sampleRate={100}
+                  leadLabels={leadNames}
+                  visibleLeads={selectedLeads}
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   const handleUpload = async () => {
     if (files.length === 0) {
       alert("No files selected!");
@@ -221,7 +324,6 @@ const Homepage = () => {
       alert("Error: Please upload .dat file");
       setIsUploading(false);
       setUploadSuccess(false);
-
       return;
     } else if (files.length > 1) {
       alert("Please only upload one file");
@@ -267,13 +369,19 @@ const Homepage = () => {
           const formData = new FormData();
           formData.append("file", file);
 
-          const response = await fetch(
-            "https://test-485822052532.asia-southeast1.run.app/predict",
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          // Uncomment the appropriate endpoint
+          // const response = await fetch(
+          //   "https://test-485822052532.asia-southeast1.run.app/predict",
+          //   {
+          //     method: "POST",
+          //     body: formData,
+          //   }
+          // );
+
+          const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: formData,
+          });
 
           if (!response.ok) {
             throw new Error(`API call failed with status ${response.status}`);
@@ -282,36 +390,42 @@ const Homepage = () => {
           const result = await response.json();
           console.log("Prediction result:", result);
 
-          // Show success popup with formatted results
-          // Replace the success alert in handleUpload with:
-          setPredictionResult({
+          // Create result object
+          const resultData: ECGData = {
             fileName: file.name,
             norm_prob: result.norm_prob,
             mi_prob: result.mi_prob,
             confidence: result.confidence,
             prediction: result.prediction,
             ecg_data: result.ecg_data,
-          });
+          };
+
+          // Set prediction result and open modal
+          setPredictionResult(resultData);
+          setActiveModalData(resultData);
+          setIsResultModalOpen(true);
+
+          // Store in database
           const { error: insertError } = await supabase.from("history").insert({
             email: userEmail,
             file: filePath,
             norm_prob: result.norm_prob,
             mi_prob: result.mi_prob,
             class: result.prediction === 0 ? "NORM" : "MI",
+            ecg_data: JSON.stringify(result.ecg_data),
           });
+
           if (insertError) {
             console.error("Error inserting into history:", insertError);
-            // Handle the error appropriately
           }
-          setIsResultModalOpen(true);
-        } catch (apiError) {
+        } catch (apiError: any) {
           alert(`Error processing ${file.name}: ${apiError}`);
         }
       }
 
       setUploadSuccess(true);
       setFiles([]);
-    } catch (error) {
+    } catch (error: any) {
       alert(`Upload failed: ${error}`);
     } finally {
       setIsUploading(false);
@@ -420,6 +534,8 @@ const Homepage = () => {
                             <div
                               key={index}
                               className={`${styles.card} ${item.class === "NORM" ? styles.normal : styles.abnormal}`}
+                              onClick={() => handleViewHistoryItem(item)}
+                              style={{ cursor: "pointer" }} // Add pointer cursor to indicate clickable
                             >
                               <div className={styles.cardHeader}>
                                 <div className={styles.statusIndicator}>

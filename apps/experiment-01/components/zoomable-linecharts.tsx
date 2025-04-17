@@ -31,16 +31,14 @@ Chart.register(
 interface ECGChartDisplayProps {
   ecgData: number[][];
   sampleRate?: number;
+  leadLabels?: string[];
+  visibleLeads?: number[];
 }
 
 const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
   ecgData = [],
   sampleRate = 100,
-}) => {
-  const chartRefs = useRef<(HTMLCanvasElement | null)[]>([]);
-  const charts = useRef<(Chart<"line", number[], string> | null)[]>([]);
-
-  const leadNames = [
+  leadLabels = [
     "Lead I",
     "Lead II",
     "Lead III",
@@ -53,7 +51,11 @@ const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
     "V4",
     "V5",
     "V6",
-  ];
+  ],
+  visibleLeads = Array.from({ length: 12 }, (_, i) => i), // Default to showing all leads
+}) => {
+  const chartRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+  const charts = useRef<(Chart<"line", number[], string> | null)[]>([]);
 
   useEffect(() => {
     // Check if ecgData is defined and has data
@@ -65,26 +67,27 @@ const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
       (i / sampleRate).toFixed(2)
     );
 
-    // Initialize all charts
-    chartRefs.current.forEach((canvas, index) => {
+    // Initialize charts for visible leads only
+    visibleLeads.forEach((leadIndex, displayIndex) => {
+      const canvas = chartRefs.current[displayIndex];
       if (!canvas) return;
 
       // Destroy previous chart if it exists
-      if (charts.current[index]) {
-        charts.current[index]?.destroy();
+      if (charts.current[displayIndex]) {
+        charts.current[displayIndex]?.destroy();
       }
 
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      charts.current[index] = new Chart<"line", number[], string>(ctx, {
+      charts.current[displayIndex] = new Chart<"line", number[], string>(ctx, {
         type: "line",
         data: {
           labels: timeAxis,
           datasets: [
             {
-              label: leadNames[index],
-              data: ecgData[index] || [], // Add fallback to empty array
+              label: leadLabels[leadIndex],
+              data: ecgData[leadIndex] || [], // Use the data from the correct lead
               borderColor: "#3b82f6",
               borderWidth: 1,
               pointRadius: 0,
@@ -148,7 +151,7 @@ const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
         }
       });
     };
-  }, [ecgData, sampleRate]);
+  }, [ecgData, sampleRate, visibleLeads, leadLabels]);
 
   // Early return if no data
   if (!ecgData || ecgData.length === 0) {
@@ -157,14 +160,14 @@ const ECGChartDisplay: React.FC<ECGChartDisplayProps> = ({
 
   return (
     <div className="space-y-8 justify-self-center w-[95%]">
-      {ecgData.map((_, index) => (
-        <div key={index} className="bg-card rounded-lg p-4 border">
-          <h3 className="text-lg font-medium mb-2">{leadNames[index]}</h3>
+      {visibleLeads.map((leadIndex, displayIndex) => (
+        <div key={leadIndex} className="bg-card rounded-lg p-4 border">
+          <h3 className="text-lg font-medium mb-2">{leadLabels[leadIndex]}</h3>
           <div className="h-64">
             <canvas
               ref={(el) => {
                 if (el) {
-                  chartRefs.current[index] = el;
+                  chartRefs.current[displayIndex] = el;
                 }
               }}
             />
