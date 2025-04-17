@@ -44,7 +44,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { RiHome2Line, RiScanLine } from "@remixicon/react";
+import {
+  RiHome2Line,
+  RiScanLine,
+  RiLineChartLine,
+  RiAdminLine,
+} from "@remixicon/react";
 import {
   ResponsiveContainer,
   XAxis,
@@ -336,7 +341,7 @@ const Admin = () => {
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink href="#">
-                      <RiHome2Line size={22} aria-hidden="true" />
+                      <RiAdminLine size={22} aria-hidden="true" />
                       <span className="sr-only">Admin</span>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
@@ -366,8 +371,7 @@ const Admin = () => {
                           <div
                             key={index}
                             className={`${styles.card} ${item.class === "NORM" ? styles.normal : styles.abnormal}`}
-                            onClick={() => handleViewHistoryItem(item)}
-                            style={{ cursor: "pointer" }} // Add pointer cursor to indicate clickable
+                            style={{ cursor: "default" }} // Changed from "pointer" to "default"
                           >
                             <div className={styles.cardHeader}>
                               <div className={styles.statusIndicator}>
@@ -439,10 +443,21 @@ const Admin = () => {
                                 <Clock size={14} className={styles.icon} />
                                 {new Date(item.created_at).toLocaleTimeString()}
                               </div>
-                              <p>
-                                <strong>File:</strong>{" "}
-                                {item.file.split("/").pop()}
-                              </p>
+                              <div className={styles.chart}>
+                                <p>
+                                  <strong>File:</strong>{" "}
+                                  {item.file.split("/").pop()}
+                                </p>
+                                <RiLineChartLine
+                                  size={20}
+                                  className={styles.chartIcon}
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent event bubbling
+                                    handleViewHistoryItem(item);
+                                  }}
+                                  style={{ cursor: "pointer" }} // Show pointer cursor on hover
+                                />
+                              </div>
                             </div>
                           </div>
                         ))
