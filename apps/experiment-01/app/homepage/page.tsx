@@ -243,16 +243,7 @@ const Homepage = () => {
     if (!dataToDisplay) return null;
 
     return (
-      <Dialog
-        open={isResultModalOpen}
-        onOpenChange={(open) => {
-          setIsResultModalOpen(open);
-          if (!open) {
-            // Modal is being closed, refresh the page
-            window.location.reload();
-          }
-        }}
-      >
+      <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
         <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>ECG Results for {dataToDisplay.fileName}</DialogTitle>
@@ -439,6 +430,7 @@ const Homepage = () => {
             console.error("Error inserting into history:", insertError);
           }
           // Set prediction result and open modal
+          await getHistory(email);
           setPredictionResult(resultData);
           setActiveModalData(resultData);
           setIsResultModalOpen(true);
