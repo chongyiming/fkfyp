@@ -95,9 +95,6 @@ interface HistoryItem {
 }
 
 const Homepage = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [email, setEmail] = useState("");
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [predictionResult, setPredictionResult] = useState<ECGData | null>(
@@ -108,28 +105,6 @@ const Homepage = () => {
     null
   );
   const [activeModalData, setActiveModalData] = useState<ECGData | null>(null);
-  const [files, setFiles] = useState<File[]>([]);
-
-  // Greeting based on time of day
-  const currentHour = new Date().getHours();
-  let greeting = "Good morning";
-  if (currentHour >= 12 && currentHour < 17) {
-    greeting = "Good afternoon";
-  } else if (currentHour >= 17) {
-    greeting = "Good evening";
-  }
-
-  const bgColor = isDarkMode ? "bg-[#121212]" : "bg-white";
-  const borderColor = isDarkMode ? "border-gray-800" : "border-gray-200";
-  const textColor = isDarkMode ? "text-white" : "text-gray-900";
-  const gridColor = isDarkMode ? "#333" : "#e5e7eb";
-  const labelColor = isDarkMode ? "#888" : "#666";
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(Array.from(e.target.files));
-    }
-  };
 
   const ECGChartDisplayComponent = dynamic(
     () => import("@/components/zoomable-linecharts"),
@@ -150,30 +125,13 @@ const Homepage = () => {
 
     const { user } = JSON.parse(authToken);
     setEmail(user.email);
-    setUserInfo(user.email);
     getHistory(user.email);
   }, []);
-
-  async function setUserInfo(email: string) {
-    const { data, error } = await supabase
-      .from("permission")
-      .select("*")
-      .eq("email", email)
-      .single();
-
-    if (error) {
-      const { error: insertError } = await supabase.from("permission").insert({
-        email: email,
-        perm: 0,
-      });
-    }
-  }
 
   async function getHistory(email: string) {
     const { data, error } = await supabase
       .from("history")
       .select("*")
-      .eq("email", email)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -326,129 +284,6 @@ const Homepage = () => {
     );
   };
 
-  const handleUpload = async () => {
-    if (files.length === 0) {
-      alert("No files selected!");
-      return;
-    }
-
-    setIsUploading(true);
-
-    // Check if any file is not a .dat file
-    const invalidFiles = files.filter((file) => !file.name.endsWith(".dat"));
-    if (invalidFiles.length > 0) {
-      alert("Error: Please upload .dat file");
-      setIsUploading(false);
-      setUploadSuccess(false);
-      return;
-    } else if (files.length > 1) {
-      alert("Please only upload one file");
-      setIsUploading(false);
-      setUploadSuccess(false);
-      return;
-    }
-
-    // Get user email from local storage
-    const authToken = localStorage.getItem(
-      "sb-onroqajvamgdrnrjnzzu-auth-token"
-    );
-    if (!authToken) {
-      alert("Error: User not authenticated");
-      setIsUploading(false);
-      return;
-    }
-
-    const { user } = JSON.parse(authToken);
-    const userEmail = user.email;
-
-    try {
-      const currentDate = new Date();
-      const folderName = currentDate.toISOString().replace(/[:.]/g, "-");
-      const basePath = `${userEmail}/ECG/${folderName}/`;
-
-      for (const file of files) {
-        const sanitizedFileName = file.name
-          .replace(/\s+/g, "_")
-          .replace(/[^a-zA-Z0-9_.-]/g, "");
-
-        const filePath = `${basePath}${sanitizedFileName}`;
-        const { data, error } = await supabase.storage
-          .from("file")
-          .upload(filePath, file);
-
-        if (error) {
-          alert(`Error uploading file ${file.name}: ${error.message}`);
-          continue;
-        }
-
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-
-          // Uncomment the appropriate endpoint
-          // const response = await fetch(
-          //   "https://test-485822052532.asia-southeast1.run.app/predict",
-          //   {
-          //     method: "POST",
-          //     body: formData,
-          //   }
-          // );
-
-          const response = await fetch("http://127.0.0.1:5000/predict", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error(`API call failed with status ${response.status}`);
-          }
-
-          const result = await response.json();
-          console.log("Prediction result:", result);
-
-          // Create result object
-          const resultData: ECGData = {
-            fileName: file.name,
-            norm_prob: result.norm_prob,
-            mi_prob: result.mi_prob,
-            confidence: result.confidence,
-            prediction: result.prediction,
-            ecg_data: result.ecg_data,
-          };
-
-          // Set prediction result and open modal
-          setPredictionResult(resultData);
-          setActiveModalData(resultData);
-          setIsResultModalOpen(true);
-
-          // Store in database
-          const { error: insertError } = await supabase.from("history").insert({
-            email: userEmail,
-            file: filePath,
-            norm_prob: result.norm_prob,
-            mi_prob: result.mi_prob,
-            class: result.prediction === 0 ? "NORM" : "MI",
-            ecg_data: JSON.stringify(result.ecg_data),
-          });
-
-          if (insertError) {
-            console.error("Error inserting into history:", insertError);
-          }
-        } catch (apiError: any) {
-          alert(`Error processing ${file.name}: ${apiError}`);
-        }
-      }
-
-      setUploadSuccess(true);
-      setFiles([]);
-    } catch (error: any) {
-      alert(`Upload failed: ${error}`);
-    } finally {
-      setIsUploading(false);
-      getHistory(email);
-    }
-  };
-
   return (
     email && (
       <SidebarProvider>
@@ -483,64 +318,9 @@ const Homepage = () => {
           <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6 relative">
             <div className="h-[calc(100vh-4rem)] overflow-auto pb-6">
               {/* CSS Grid Dashboard Layout */}
-              {/* Welcome Message - Now with fixed positioning */}
-              <div className="welcome sticky top-0 z-10 mb-4">
-                <div
-                  className={`dashboard-card ${bgColor} rounded-2xl border ${borderColor} p-8 shadow-lg`}
-                >
-                  {/* Full-width greeting message */}
-                  <div className="w-full">
-                    <h2 className={`text-xl font-semibold ${textColor}`}>
-                      {greeting}, {email}
-                    </h2>
-                  </div>
 
-                  {/* File upload section moved below */}
-                  <div className="mt-6 border-2 border-dashed border-muted p-6 rounded-lg text-center">
-                    <Input
-                      type="file"
-                      id="documents"
-                      multiple
-                      className="hidden"
-                      onChange={handleFileChange}
-                      required
-                      accept=".dat"
-                    />
-                    <label
-                      htmlFor="documents"
-                      className="cursor-pointer flex flex-col items-center gap-2"
-                    >
-                      <FileUp className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        Click to upload ECG data
-                      </span>
-                    </label>
-                    {files.length > 0 && (
-                      <div className="mt-4 text-sm text-muted-foreground">
-                        {files.length} file(s) selected
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Upload button */}
-                  <Button
-                    onClick={handleUpload}
-                    disabled={isUploading || files.length === 0}
-                    className="mt-4 w-full"
-                  >
-                    {isUploading ? "Uploading..." : "Save files"}
-                  </Button>
-
-                  {/* Upload success message */}
-                  {uploadSuccess && (
-                    <div className="mt-4 text-sm text-green-500">
-                      File & Result saved successfully!
-                    </div>
-                  )}
-                </div>
-              </div>
               <div className={styles.parent}>
-                <h1>History</h1>
+                <h1>Record</h1>
                 <div className={styles.mainContent}>
                   <div>
                     <div className={styles.cardList}>

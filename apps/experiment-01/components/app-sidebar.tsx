@@ -25,6 +25,8 @@ import {
   RiSettings3Line,
   RiLeafLine,
   RiLogoutBoxLine,
+  RiAdminLine,
+  RiHome2Line,
 } from "@remixicon/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,20 +36,6 @@ import Image from "next/image";
 
 // This is sample data.
 const data = {
-  teams: [
-    // {
-    //   name: "InnovaCraft",
-    //   logo: "/logo-01.png",
-    // },
-    // {
-    //   name: "Acme Corp.",
-    //   logo: "/logo-01.png",
-    // },
-    // {
-    //   name: "Evil Corp.",
-    //   logo: "/logo-01.png",
-    // },
-  ],
   navMain: [
     {
       title: "Sections",
@@ -56,7 +44,12 @@ const data = {
         {
           title: "Homepage",
           url: "/homepage",
-          icon: RiScanLine,
+          icon: RiHome2Line,
+        },
+        {
+          title: "Admin",
+          url: "/admin",
+          icon: RiAdminLine,
         },
       ],
     },
@@ -70,69 +63,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     localStorage.removeItem("sb-onroqajvamgdrnrjnzzu-auth-token");
     router.push("/");
   };
-  const [userId, setUserId] = useState("");
-  const [perm, setPerm] = useState("");
-  const [read, setRead] = useState(false);
-  // console.log("Perm",perm)
-  // console.log("Read",read)
+  const [email, setEmail] = useState("");
+  const [perm, setPermission] = useState(0);
 
   useEffect(() => {
     const authToken = localStorage.getItem(
-      "sb-velfmvmemrzurdweumyo-auth-token"
+      "sb-onroqajvamgdrnrjnzzu-auth-token"
     );
     if (authToken) {
-      try {
-        const parsedToken = JSON.parse(authToken);
-        setUserId(parsedToken?.user?.id);
-      } catch (error) {
-        console.error("Error parsing auth token:", error);
-      }
+      const { user } = JSON.parse(authToken);
+      setEmail(user.email);
+      getPerm(user.email);
     }
   }, []);
 
-  useEffect(() => {
-    if (userId || perm) {
-      getInfo(userId); // Call getInfo only when userId is set
-      getPerm(perm);
-    }
-  }, [userId, perm]);
-
-  async function getInfo(userId: string) {
+  async function getPerm(email: string) {
     try {
       const { data: agentData, error: agentError } = await supabase
-        .from("Agents")
+        .from("permission")
         .select("perm")
-        .eq("user_id", userId)
-        .single(); // Use .single() if you expect only one row
-
-      if (agentError) {
-        throw new Error(agentError.message);
-      }
-
-      // Set the form fields with the fetched data
-      if (agentData) {
-        setPerm(agentData.perm);
-      }
-
-      console.log("Agent data fetched successfully:", agentData);
-      return agentData;
-    } catch (error) {
-      console.error("Error fetching agent info:", error);
-      throw error;
-    }
-  }
-
-  async function getPerm(perm: string) {
-    try {
-      const { data: agentData, error: agentError } = await supabase
-        .from("Permissions")
-        .select("read")
-        .eq("id", perm)
+        .eq("email", email)
         .single(); // Use .single() if you expect only one row
 
       // Set the form fields with the fetched data
       if (agentData) {
-        setRead(agentData.read);
+        setPermission(agentData.perm);
+        console.log(
+          "Current permission:",
+          agentData.perm,
+          typeof agentData.perm
+        );
       }
 
       console.log("Agent data fetched successfully:", agentData);
@@ -157,31 +117,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupLabel>
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className="group/menu-button font-medium gap-3 h-9 rounded-lg bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
-                      isActive={item.url === pathname}
-                    >
-                      <Link href={item.url}>
-                        {item.icon && (
-                          <item.icon
-                            className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
-                            size={22}
-                            aria-hidden="true"
-                          />
-                        )}
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {item.items
+                  .filter((i) => i.title !== "Admin" || perm === 1)
+                  .map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        className="group/menu-button font-medium gap-3 h-9 rounded-lg bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
+                        isActive={item.url === pathname}
+                      >
+                        <Link href={item.url}>
+                          {item.icon && (
+                            <item.icon
+                              className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
+                              size={22}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
       </SidebarContent>
+
       <SidebarFooter>
         <hr className="border-t border-border mx-2 -mt-px" />
         <SidebarMenu>
