@@ -27,6 +27,7 @@ import {
   RiLogoutBoxLine,
   RiAdminLine,
   RiHome2Line,
+  RiRobot2Line,
 } from "@remixicon/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -50,6 +51,11 @@ const data = {
           title: "Admin",
           url: "/admin",
           icon: RiAdminLine,
+        },
+        {
+          title: "Chatbot",
+          url: "/chatbot",
+          icon: RiRobot2Line,
         },
       ],
     },
