@@ -107,7 +107,7 @@ function ChatbotPage() {
                   <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink href="#">
                       <RiRobot2Line size={22} aria-hidden="true" />
-                      <span className="sr-only">Admin</span>
+                      <span className="sr-only">Chatbot</span>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
