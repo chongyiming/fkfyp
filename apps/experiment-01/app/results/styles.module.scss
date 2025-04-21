@@ -1,18 +1,3 @@
-.parent {
-  width: 90%;
-  justify-self: center;
-
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-  }
-}
-
-.mainContent {
-  width: 100%;
-}
-
 .cardList {
   //   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -102,7 +87,11 @@
   transition: all 0.3s ease;
   transform: rotate(-90deg);
 }
-
+.History h1 {
+  font-size: large;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
 .ringCenter {
   position: absolute;
   inset: 0;
@@ -121,11 +110,7 @@
   font-size: 0.75rem;
   color: #6b7280; /* gray-500 */
 }
-.History h1 {
-  font-size: large;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
+
 .time {
   display: flex;
   align-items: center;
@@ -193,27 +178,5 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* Add these global styles for the welcome section */
-.welcome {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: inherit;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-
-  /* Optional: add a subtle shadow to separate it from scrolled content */
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 8px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.05), transparent);
-    pointer-events: none;
   }
 }
