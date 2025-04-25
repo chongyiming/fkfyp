@@ -283,7 +283,7 @@ const Result = () => {
 
         {/* Main Content */}
         <div className={styles.History}>
-          <h1>History</h1>
+          <h1>Results</h1>
           <div className={styles.mainContent}>
             {loading ? (
               <div className={styles.loadingState}>

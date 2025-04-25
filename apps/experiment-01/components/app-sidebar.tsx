@@ -48,11 +48,7 @@ const data = {
           url: "/homepage",
           icon: RiHome2Line,
         },
-        {
-          title: "Admin",
-          url: "/admin",
-          icon: RiAdminLine,
-        },
+        
         {
           title: "Chatbot",
           url: "/chatbot",
@@ -63,7 +59,13 @@ const data = {
           url: "/results",
           icon: RiLineChartLine,
         },
+        {
+          title: "Admin",
+          url: "/admin",
+          icon: RiAdminLine,
+        },
       ],
+      
     },
   ],
 };

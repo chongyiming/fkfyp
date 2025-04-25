@@ -359,7 +359,7 @@ const Admin = () => {
         {/* Main Content */}
         {/* Main Content */}
         <div className={styles.History}>
-          <h1>History</h1>
+          <h1>Admin</h1>
           <div className={styles.mainContent}>
             {loading ? (
               <div className={styles.loadingState}>

@@ -112,7 +112,7 @@ function ChatbotPage() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Admin</BreadcrumbPage>
+                    <BreadcrumbPage>Chatbot</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -120,12 +120,11 @@ function ChatbotPage() {
           </div>
         </header>
         <div className={styles.chatbotContainer}>
-          <h1>Document Chatbot</h1>
 
           <div className={styles.chatWindow}>
             {messages.length === 0 ? (
               <div className={styles.welcomeMessage}>
-                <p>Ask me anything about your uploaded document!</p>
+                <p>What can I help with?</p>
               </div>
             ) : (
               messages.map((message, index) => (
@@ -153,7 +152,7 @@ function ChatbotPage() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask about your document..."
+              placeholder="Ask anything"
               disabled={isLoading}
             />
             <button type="submit" disabled={isLoading}>
