@@ -28,6 +28,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
+import { RiHome2Line } from "@remixicon/react";
 
 interface ECGChartProps {
   type: "normal" | "mi";
@@ -383,7 +384,10 @@ export default function MyocardialInfarctionPage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                  <BreadcrumbLink href="/">
+                    <RiHome2Line size={22} aria-hidden="true" />
+                    <span className="sr-only">About MI</span>
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>

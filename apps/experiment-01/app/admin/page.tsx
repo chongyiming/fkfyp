@@ -341,8 +341,8 @@ const Admin = () => {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      <RiAdminLine size={22} aria-hidden="true" />
+                    <BreadcrumbLink href="/">
+                      <RiHome2Line size={22} aria-hidden="true" />
                       <span className="sr-only">Admin</span>
                     </BreadcrumbLink>
                   </BreadcrumbItem>

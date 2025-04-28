@@ -136,7 +136,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
                 {item.items
-                  .filter((i) => i.title !== "Admin" || perm === 1)
+                  .filter(
+                    (i) =>
+                      (i.title !== "Admin" && i.title !== "Chatbot") ||
+                      perm === 1
+                  )
                   .map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton

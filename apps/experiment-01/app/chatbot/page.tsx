@@ -105,8 +105,8 @@ function ChatbotPage() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      <RiRobot2Line size={22} aria-hidden="true" />
+                    <BreadcrumbLink href="/">
+                      <RiHome2Line size={22} aria-hidden="true" />
                       <span className="sr-only">Chatbot</span>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
@@ -120,7 +120,6 @@ function ChatbotPage() {
           </div>
         </header>
         <div className={styles.chatbotContainer}>
-
           <div className={styles.chatWindow}>
             {messages.length === 0 ? (
               <div className={styles.welcomeMessage}>

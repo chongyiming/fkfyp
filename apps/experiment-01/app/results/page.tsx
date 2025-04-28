@@ -10,7 +10,7 @@ import {
   CheckSquare,
   Square,
 } from "lucide-react";
-import { RiLineChartLine } from "@remixicon/react";
+import { RiLineChartLine, RiHome2Line } from "@remixicon/react";
 import {
   SidebarProvider,
   SidebarInset,
@@ -267,9 +267,9 @@ const Result = () => {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    <RiLineChartLine size={22} aria-hidden="true" />
-                    <span className="sr-only">History</span>
+                  <BreadcrumbLink href="/">
+                    <RiHome2Line size={22} aria-hidden="true" />
+                    <span className="sr-only">Result</span>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
