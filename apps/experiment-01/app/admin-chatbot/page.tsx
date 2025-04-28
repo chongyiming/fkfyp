@@ -59,7 +59,7 @@ function ChatbotPage() {
       //   });
 
       const response = await fetch(
-        "https://general-gemini-api-485822052532.asia-southeast1.run.app/predict",
+        "https://gemini-api-485822052532.asia-southeast1.run.app/predict",
         {
           method: "POST",
           headers: {
@@ -107,12 +107,12 @@ function ChatbotPage() {
                   <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink href="/">
                       <RiHome2Line size={22} aria-hidden="true" />
-                      <span className="sr-only">Chatbot</span>
+                      <span className="sr-only">Admin Chatbot</span>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Chatbot</BreadcrumbPage>
+                    <BreadcrumbPage>Admin Chatbot</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>

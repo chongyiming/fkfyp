@@ -54,26 +54,37 @@ const data = {
           url: "/aboutMI",
           icon: RiHeartPulseLine,
         },
-        {
-          title: "Chatbot",
-          url: "/chatbot",
-          icon: RiRobot2Line,
-        },
+
         {
           title: "Results",
           url: "/results",
           icon: RiLineChartLine,
         },
         {
+          title: "Chatbot",
+          url: "/chatbot",
+          icon: RiRobot2Line,
+        },
+      ],
+    },
+    {
+      title: "Admin",
+      url: "#",
+      items: [
+        {
           title: "Admin",
           url: "/admin",
           icon: RiAdminLine,
+        },
+        {
+          title: "Admin Chatbot",
+          url: "/admin-chatbot",
+          icon: RiRobot2Line,
         },
       ],
     },
   ],
 };
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
@@ -101,9 +112,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         .from("permission")
         .select("perm")
         .eq("email", email)
-        .single(); // Use .single() if you expect only one row
+        .single();
 
-      // Set the form fields with the fetched data
       if (agentData) {
         setPermission(agentData.perm);
         console.log(
@@ -128,20 +138,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <hr className="border-t border-border mx-2 -mt-px" />
       </SidebarHeader>
       <SidebarContent>
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel className="uppercase text-muted-foreground/60">
-              {item.title}
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="px-2">
-              <SidebarMenu>
-                {item.items
-                  .filter(
-                    (i) =>
-                      (i.title !== "Admin" && i.title !== "Chatbot") ||
-                      perm === 1
-                  )
-                  .map((item) => (
+        {data.navMain
+          // Filter out the entire Admin section if perm is not 1
+          .filter((item) => item.title !== "Admin" || perm === 1)
+          .map((item) => (
+            <SidebarGroup key={item.title}>
+              <SidebarGroupLabel className="uppercase text-muted-foreground/60">
+                {item.title}
+              </SidebarGroupLabel>
+              <SidebarGroupContent className="px-2">
+                <SidebarMenu>
+                  {item.items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         asChild
@@ -161,10 +168,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
       </SidebarContent>
 
       <SidebarFooter>
