@@ -29,6 +29,7 @@ import {
   RiHome2Line,
   RiRobot2Line,
   RiLineChartLine,
+  RiHeartPulseLine,
 } from "@remixicon/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -48,7 +49,11 @@ const data = {
           url: "/homepage",
           icon: RiHome2Line,
         },
-        
+        {
+          title: "About MI",
+          url: "/aboutMI",
+          icon: RiHeartPulseLine,
+        },
         {
           title: "Chatbot",
           url: "/chatbot",
@@ -65,7 +70,6 @@ const data = {
           icon: RiAdminLine,
         },
       ],
-      
     },
   ],
 };
