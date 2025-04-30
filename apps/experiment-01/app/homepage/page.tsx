@@ -345,7 +345,7 @@ const Homepage = () => {
     try {
       if (!window.ethereum) {
         alert(
-          "Please install MetaMask to use this feature! \n\nhttps://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?utm_source=www.google.com \n\nRefresh this page once you have install Metamask"
+          "Please install MetaMask browser extensionto use this feature! \n\nRefresh this page once you have install Metamask"
         );
         return;
       }
