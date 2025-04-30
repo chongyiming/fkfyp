@@ -73,6 +73,7 @@ import styles from "./styles.module.scss";
 import { get } from "http";
 import ECGChartDisplay from "@/components/zoomable-linecharts";
 import dynamic from "next/dynamic";
+import { ethers, Contract, ContractTransactionResponse  } from 'ethers';
 
 // Define TypeScript interfaces for our data
 interface ECGData {
@@ -94,6 +95,34 @@ interface HistoryItem {
   email?: string;
 }
 
+// Contract ABI (just the mint function part)
+const contractABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "norm",
+        "type": "uint256"
+      }
+    ],
+    "name": "mint",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+];
+
+interface IMyContract extends ethers.BaseContract {
+  mint: (norm: number, overrides?: { value?: bigint }) => Promise<ContractTransactionResponse>;
+  interface: ethers.Interface; // Add interface property
+}
+
 const Homepage = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -110,6 +139,8 @@ const Homepage = () => {
   const [activeModalData, setActiveModalData] = useState<ECGData | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const router = useRouter();
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const contractAddress = "0x7AEF24a023a107B66084F2A6197456Bee256BB0F";
   // Greeting based on time of day
   const currentHour = new Date().getHours();
   let greeting = "Good morning";
@@ -160,6 +191,41 @@ const Homepage = () => {
     fetchDashboardData();
   }, []);
 
+  async function mintNFT(normValue: number) {
+    try {
+      if (!window.ethereum) {
+        throw new Error("Please install MetaMask!");
+      }
+  
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+  
+      // 3. Cast the contract to your interface
+      const contract = new ethers.Contract(
+        contractAddress, 
+        contractABI, 
+        signer
+      ) as unknown as IMyContract;
+  
+      // 4. Now TypeScript knows mint exists
+      const tx = await contract.mint(normValue, { value: 0n }); // Using 0n bigint for ETH value
+      
+      await tx.wait();
+      
+      // For getting return value (alternative approach)
+      const tokenId = await provider.call({
+        to: contractAddress,
+        data: contract.interface.encodeFunctionData("mint", [normValue])
+      });
+      
+      return Number(BigInt(tokenId));
+  
+    } catch (error) {
+      console.error("Minting failed:", error);
+      throw error;
+    }
+  }
+
   async function setUserInfo(email: string) {
     const { data, error } = await supabase
       .from("permission")
@@ -196,20 +262,83 @@ const Homepage = () => {
     setHistory(parsedData);
   }
 
-  const handleViewHistoryItem = (item: HistoryItem) => {
-    const historyItemData: ECGData = {
-      fileName: item.file.split("/").pop() || "Unknown file",
-      norm_prob: item.norm_prob,
-      mi_prob: item.mi_prob,
-      confidence: Math.max(item.norm_prob, item.mi_prob),
-      prediction: item.class === "NORM" ? 0 : 1,
-      ecg_data: item.ecg_data,
-    };
-
-    setViewingHistoryItem(historyItemData);
-    setActiveModalData(historyItemData);
-    setIsResultModalOpen(true);
+  const connectWallet = async () => {
+    try {
+      // Check if MetaMask is installed
+      if (!window.ethereum) {
+        alert('Please install MetaMask to use this feature!');
+        return;
+      }
+  
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+  
+      // Get the first account
+      const account = accounts[0];
+      setWalletAddress(account);
+  
+      // Check current chain ID
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      const sepoliaChainId = '0xaa36a7'; // Sepolia testnet chain ID
+  
+      if (chainId !== sepoliaChainId) {
+        try {
+          // Prompt user to switch to Sepolia
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: sepoliaChainId }],
+          });
+        } catch (switchError: any) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code === 4902) {
+            try {
+              // Add Sepolia network to MetaMask
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: sepoliaChainId,
+                    chainName: 'Sepolia Test Network',
+                    nativeCurrency: {
+                      name: 'Sepolia Ether',
+                      symbol: 'ETH',
+                      decimals: 18,
+                    },
+                    rpcUrls: ['https://rpc.sepolia.org'],
+                    blockExplorerUrls: ['https://sepolia.etherscan.io'],
+                  },
+                ],
+              });
+            } catch (addError) {
+              console.error('Error adding Sepolia network:', addError);
+            }
+          } else {
+            console.error('Error switching to Sepolia:', switchError);
+          }
+        }
+      }
+  
+      // Optional: listen for account changes
+      window.ethereum.on('accountsChanged', (newAccounts: string[]) => {
+        setWalletAddress(newAccounts[0] || null);
+      });
+  
+      // Listen for chain changes
+      window.ethereum.on('chainChanged', (newChainId: string) => {
+        if (newChainId !== sepoliaChainId) {
+          alert('Please switch back to Sepolia network!');
+        }
+      });
+  
+    } catch (error) {
+      console.error('Error connecting to MetaMask:', error);
+    }
   };
+
+
+
   const getUserECGStats = async (email: string) => {
     const { data, error } = await supabase
       .from("history")
@@ -456,7 +585,7 @@ const Homepage = () => {
 
           const result = await response.json();
           console.log("Prediction result:", result);
-
+          mintNFT(result.norm_prob);
           // Create result object
           const resultData: ECGData = {
             fileName: file.name,
@@ -525,6 +654,15 @@ const Homepage = () => {
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
+                <Button 
+    className={styles.walletButton}
+    onClick={connectWallet}
+  >
+    {walletAddress ? 
+      `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}` : 
+      'Connect Wallet'
+    }
+  </Button>
               </div>
             </div>
           </header>
