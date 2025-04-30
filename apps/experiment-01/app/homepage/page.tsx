@@ -643,18 +643,18 @@ const Homepage = () => {
           formData.append("file", file);
 
           // Uncomment the appropriate endpoint
-          // const response = await fetch(
-          //   "https://test-485822052532.asia-southeast1.run.app/predict",
-          //   {
-          //     method: "POST",
-          //     body: formData,
-          //   }
-          // );
+          const response = await fetch(
+            "https://test-485822052532.asia-southeast1.run.app/predict",
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
 
-          const response = await fetch("http://127.0.0.1:5000/predict", {
-            method: "POST",
-            body: formData,
-          });
+          // const response = await fetch("http://127.0.0.1:5000/predict", {
+          //   method: "POST",
+          //   body: formData,
+          // });
 
           if (!response.ok) {
             throw new Error(`API call failed with status ${response.status}`);
