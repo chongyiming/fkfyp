@@ -345,7 +345,7 @@ const Homepage = () => {
     try {
       if (!window.ethereum) {
         alert(
-          "Please install MetaMask to use this feature! \n Refresh this page once you have install Metamask"
+          "Please install MetaMask to use this feature! \n\nRefresh this page once you have install Metamask"
         );
         return;
       }
@@ -829,12 +829,34 @@ const Homepage = () => {
 
                   {/* Upload button */}
                   <Button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!walletAddress) {
                         alert("Please connect your wallet first.");
                         return;
                       }
-                      handleUpload();
+
+                      try {
+                        const balanceInWei = await window.ethereum.request({
+                          method: "eth_getBalance",
+                          params: [walletAddress, "latest"],
+                        });
+
+                        const balanceInEth = parseFloat(
+                          (parseInt(balanceInWei, 16) / 1e18).toFixed(4)
+                        );
+
+                        if (balanceInEth < 0.01) {
+                          alert(
+                            "Insufficient balance. You need at least 0.01 ETH balances in wallet."
+                          );
+                          return;
+                        }
+
+                        handleUpload();
+                      } catch (error) {
+                        console.error("Error checking balance:", error);
+                        alert("Failed to check wallet balance.");
+                      }
                     }}
                     disabled={isUploading || files.length === 0}
                     className="mt-4 w-full"
