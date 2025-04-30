@@ -344,7 +344,9 @@ const Homepage = () => {
   const connectWallet = async () => {
     try {
       if (!window.ethereum) {
-        alert("Please install MetaMask to use this feature!");
+        alert(
+          "Please install MetaMask to use this feature! \n Refresh this page once you have install Metamask"
+        );
         return;
       }
 
