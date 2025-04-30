@@ -269,8 +269,6 @@ const Homepage = () => {
       } catch (error) {
         console.error("Error checking wallet connection:", error);
       }
-    } else {
-      alert("Please install MetaMask to use this feature!");
     }
   }
 
