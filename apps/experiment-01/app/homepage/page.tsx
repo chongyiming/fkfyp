@@ -73,7 +73,7 @@ import styles from "./styles.module.scss";
 import { get } from "http";
 import ECGChartDisplay from "@/components/zoomable-linecharts";
 import dynamic from "next/dynamic";
-import { ethers, Contract, ContractTransactionResponse  } from 'ethers';
+import { ethers, Contract, ContractTransactionResponse } from "ethers";
 
 // Define TypeScript interfaces for our data
 interface ECGData {
@@ -98,28 +98,31 @@ interface HistoryItem {
 // Contract ABI (just the mint function part)
 const contractABI = [
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "norm",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "norm",
+        type: "uint256",
+      },
     ],
-    "name": "mint",
-    "outputs": [
+    name: "mint",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "payable",
-    "type": "function"
-  }
+    stateMutability: "payable",
+    type: "function",
+  },
 ];
 
 interface IMyContract extends ethers.BaseContract {
-  mint: (norm: number, overrides?: { value?: bigint }) => Promise<ContractTransactionResponse>;
+  mint: (
+    norm: number,
+    overrides?: { value?: bigint }
+  ) => Promise<ContractTransactionResponse>;
   interface: ethers.Interface; // Add interface property
 }
 
@@ -133,9 +136,6 @@ const Homepage = () => {
     null
   );
   const [history, setHistory] = useState<HistoryItem[] | null>(null);
-  const [viewingHistoryItem, setViewingHistoryItem] = useState<ECGData | null>(
-    null
-  );
   const [activeModalData, setActiveModalData] = useState<ECGData | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const router = useRouter();
@@ -182,6 +182,8 @@ const Homepage = () => {
     const { user } = JSON.parse(authToken);
     setEmail(user.email);
     setUserInfo(user.email);
+
+    checkWalletConnection();
     getHistory(user.email);
 
     const fetchDashboardData = async () => {
@@ -191,35 +193,115 @@ const Homepage = () => {
     fetchDashboardData();
   }, []);
 
+  useEffect(() => {
+    if (!isResultModalOpen) {
+      const authToken = localStorage.getItem(
+        "sb-onroqajvamgdrnrjnzzu-auth-token"
+      );
+      if (!authToken) {
+        console.error("User not authenticated");
+        return;
+      }
+
+      const { user } = JSON.parse(authToken);
+      const fetchDashboardData = async () => {
+        const stats = await getUserECGStats(user.email);
+        setEcgStats(stats);
+      };
+      fetchDashboardData();
+    }
+  }, [isResultModalOpen]); // ✅ only triggers when isResultModalOpen changes
+
+  async function checkWalletConnection() {
+    if (window.ethereum) {
+      try {
+        const sepoliaChainId = "0xaa36a7";
+
+        // Get connected accounts
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        }
+
+        // Get current chain ID
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
+
+        // Force switch to Sepolia if not already on it
+        if (chainId !== sepoliaChainId) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: sepoliaChainId }],
+            });
+          } catch (switchError: any) {
+            // If Sepolia not added, add it
+            if (switchError.code === 4902) {
+              try {
+                await window.ethereum.request({
+                  method: "wallet_addEthereumChain",
+                  params: [
+                    {
+                      chainId: sepoliaChainId,
+                      chainName: "Sepolia Test Network",
+                      nativeCurrency: {
+                        name: "Sepolia Ether",
+                        symbol: "ETH",
+                        decimals: 18,
+                      },
+                      rpcUrls: ["https://rpc.sepolia.org"],
+                      blockExplorerUrls: ["https://sepolia.etherscan.io"],
+                    },
+                  ],
+                });
+              } catch (addError) {
+                console.error("Error adding Sepolia:", addError);
+              }
+            } else {
+              console.error("Error switching to Sepolia:", switchError);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error);
+      }
+    } else {
+      alert("Please install MetaMask to use this feature!");
+    }
+  }
+
   async function mintNFT(normValue: number) {
     try {
       if (!window.ethereum) {
         throw new Error("Please install MetaMask!");
       }
-  
+
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-  
+
       // 3. Cast the contract to your interface
       const contract = new ethers.Contract(
-        contractAddress, 
-        contractABI, 
+        contractAddress,
+        contractABI,
         signer
       ) as unknown as IMyContract;
-  
+
       // 4. Now TypeScript knows mint exists
       const tx = await contract.mint(normValue, { value: 0n }); // Using 0n bigint for ETH value
-      
+
       await tx.wait();
-      
+
       // For getting return value (alternative approach)
       const tokenId = await provider.call({
         to: contractAddress,
-        data: contract.interface.encodeFunctionData("mint", [normValue])
+        data: contract.interface.encodeFunctionData("mint", [normValue]),
       });
-      
+
       return Number(BigInt(tokenId));
-  
     } catch (error) {
       console.error("Minting failed:", error);
       throw error;
@@ -261,83 +343,78 @@ const Homepage = () => {
     console.log("history", parsedData);
     setHistory(parsedData);
   }
-
   const connectWallet = async () => {
     try {
-      // Check if MetaMask is installed
       if (!window.ethereum) {
-        alert('Please install MetaMask to use this feature!');
+        alert("Please install MetaMask to use this feature!");
         return;
       }
-  
-      // Request account access
+
+      const sepoliaChainId = "0xaa36a7";
+
       const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
+        method: "eth_requestAccounts",
       });
-  
-      // Get the first account
       const account = accounts[0];
       setWalletAddress(account);
-  
-      // Check current chain ID
-      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-      const sepoliaChainId = '0xaa36a7'; // Sepolia testnet chain ID
-  
+
+      const chainId = await window.ethereum.request({ method: "eth_chainId" });
+
       if (chainId !== sepoliaChainId) {
         try {
-          // Prompt user to switch to Sepolia
           await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
+            method: "wallet_switchEthereumChain",
             params: [{ chainId: sepoliaChainId }],
           });
         } catch (switchError: any) {
-          // This error code indicates that the chain has not been added to MetaMask
           if (switchError.code === 4902) {
             try {
-              // Add Sepolia network to MetaMask
               await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
+                method: "wallet_addEthereumChain",
                 params: [
                   {
                     chainId: sepoliaChainId,
-                    chainName: 'Sepolia Test Network',
+                    chainName: "Sepolia Test Network",
                     nativeCurrency: {
-                      name: 'Sepolia Ether',
-                      symbol: 'ETH',
+                      name: "Sepolia Ether",
+                      symbol: "ETH",
                       decimals: 18,
                     },
-                    rpcUrls: ['https://rpc.sepolia.org'],
-                    blockExplorerUrls: ['https://sepolia.etherscan.io'],
+                    rpcUrls: ["https://rpc.sepolia.org"],
+                    blockExplorerUrls: ["https://sepolia.etherscan.io"],
                   },
                 ],
               });
             } catch (addError) {
-              console.error('Error adding Sepolia network:', addError);
+              console.error("Error adding Sepolia:", addError);
             }
           } else {
-            console.error('Error switching to Sepolia:', switchError);
+            console.error("Error switching to Sepolia:", switchError);
           }
         }
       }
-  
-      // Optional: listen for account changes
-      window.ethereum.on('accountsChanged', (newAccounts: string[]) => {
+
+      // Handle account changes
+      window.ethereum.on("accountsChanged", (newAccounts: string[]) => {
         setWalletAddress(newAccounts[0] || null);
       });
-  
-      // Listen for chain changes
-      window.ethereum.on('chainChanged', (newChainId: string) => {
+
+      // Handle chain changes
+      window.ethereum.on("chainChanged", async (newChainId: string) => {
         if (newChainId !== sepoliaChainId) {
-          alert('Please switch back to Sepolia network!');
+          alert("Please switch to the Sepolia network!");
+          setWalletAddress(null);
+        } else {
+          const accounts = await window.ethereum!.request({
+            method: "eth_accounts",
+          });
+          setWalletAddress(accounts[0] || null);
         }
       });
-  
     } catch (error) {
-      console.error('Error connecting to MetaMask:', error);
+      console.error("Error connecting to MetaMask:", error);
     }
   };
-
-
 
   const getUserECGStats = async (email: string) => {
     const { data, error } = await supabase
@@ -566,18 +643,18 @@ const Homepage = () => {
           formData.append("file", file);
 
           // Uncomment the appropriate endpoint
-          const response = await fetch(
-            "https://test-485822052532.asia-southeast1.run.app/predict",
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          // const response = await fetch(
+          //   "https://test-485822052532.asia-southeast1.run.app/predict",
+          //   {
+          //     method: "POST",
+          //     body: formData,
+          //   }
+          // );
 
-          // const response = await fetch("http://127.0.0.1:5000/predict", {
-          //   method: "POST",
-          //   body: formData,
-          // });
+          const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: formData,
+          });
 
           if (!response.ok) {
             throw new Error(`API call failed with status ${response.status}`);
@@ -585,7 +662,7 @@ const Homepage = () => {
 
           const result = await response.json();
           console.log("Prediction result:", result);
-          mintNFT(result.norm_prob);
+
           // Create result object
           const resultData: ECGData = {
             fileName: file.name,
@@ -611,6 +688,7 @@ const Homepage = () => {
           }
           // Set prediction result and open modal
           await getHistory(email);
+          mintNFT(result.norm_prob);
           setPredictionResult(resultData);
           setActiveModalData(resultData);
           setIsResultModalOpen(true);
@@ -654,15 +732,11 @@ const Homepage = () => {
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
-                <Button 
-    className={styles.walletButton}
-    onClick={connectWallet}
-  >
-    {walletAddress ? 
-      `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}` : 
-      'Connect Wallet'
-    }
-  </Button>
+                <Button className={styles.walletButton} onClick={connectWallet}>
+                  {walletAddress
+                    ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`
+                    : "Connect Wallet"}
+                </Button>
               </div>
             </div>
           </header>
@@ -755,7 +829,13 @@ const Homepage = () => {
 
                   {/* Upload button */}
                   <Button
-                    onClick={handleUpload}
+                    onClick={() => {
+                      if (!walletAddress) {
+                        alert("Please connect your wallet first.");
+                        return;
+                      }
+                      handleUpload();
+                    }}
                     disabled={isUploading || files.length === 0}
                     className="mt-4 w-full"
                   >
