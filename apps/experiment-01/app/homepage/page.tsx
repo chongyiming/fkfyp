@@ -836,20 +836,22 @@ const Homepage = () => {
                       }
 
                       try {
-                        const balanceInWei = await window.ethereum.request({
-                          method: "eth_getBalance",
-                          params: [walletAddress, "latest"],
-                        });
+                        if (window.ethereum) {
+                          const balanceInWei = await window.ethereum.request({
+                            method: "eth_getBalance",
+                            params: [walletAddress, "latest"],
+                          });
 
-                        const balanceInEth = parseFloat(
-                          (parseInt(balanceInWei, 16) / 1e18).toFixed(4)
-                        );
-
-                        if (balanceInEth < 0.01) {
-                          alert(
-                            "Insufficient balance. You need at least 0.01 ETH balances in wallet."
+                          const balanceInEth = parseFloat(
+                            (parseInt(balanceInWei, 16) / 1e18).toFixed(4)
                           );
-                          return;
+
+                          if (balanceInEth < 0.01) {
+                            alert(
+                              "Insufficient balance. You need at least 0.01 ETH balances in wallet."
+                            );
+                            return;
+                          }
                         }
 
                         handleUpload();
