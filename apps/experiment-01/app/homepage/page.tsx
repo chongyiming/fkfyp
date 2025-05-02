@@ -183,7 +183,6 @@ const Homepage = () => {
     setEmail(user.email);
     setUserInfo(user.email);
 
-    checkWalletConnection();
     getHistory(user.email);
 
     const fetchDashboardData = async () => {
@@ -191,6 +190,7 @@ const Homepage = () => {
       setEcgStats(stats);
     };
     fetchDashboardData();
+    checkWalletConnection();
   }, []);
 
   useEffect(() => {
