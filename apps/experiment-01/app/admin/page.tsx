@@ -87,6 +87,7 @@ interface ECGData {
   confidence: number;
   prediction: number;
   ecg_data: number[][];
+  email: string
 }
 
 interface HistoryItem {
@@ -96,7 +97,7 @@ interface HistoryItem {
   class: string;
   file: string;
   ecg_data: number[][];
-  email?: string;
+  email: string;
 }
 
 const Admin = () => {
@@ -191,6 +192,7 @@ const Admin = () => {
       confidence: Math.max(item.norm_prob, item.mi_prob),
       prediction: item.class === "NORM" ? 0 : 1,
       ecg_data: item.ecg_data,
+      email: item.email
     };
 
     setViewingHistoryItem(historyItemData);
@@ -450,6 +452,7 @@ const Admin = () => {
                         <Clock size={14} className={styles.icon} />
                         {new Date(item.created_at).toLocaleTimeString()}
                       </div>
+                      {item.email}
                       <div className={styles.chart}>
                         <p>
                           <strong>File:</strong> {item.file.split("/").pop()}
