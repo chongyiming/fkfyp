@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./Chatbot.module.css";
 import {
   SidebarInset,
@@ -36,6 +36,24 @@ function ChatbotPage() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [email, setEmail] = useState("");
+  
+  
+    useEffect(() => {
+      const authToken = localStorage.getItem(
+        "sb-onroqajvamgdrnrjnzzu-auth-token"
+      );
+      if (!authToken) {
+        console.error("User not authenticated");
+        return;
+      }
+  
+      const { user } = JSON.parse(authToken);
+      setEmail(user.email);
+
+    }, []);
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +109,7 @@ function ChatbotPage() {
     }
   };
 
-  return (
+  return ( email && 
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">

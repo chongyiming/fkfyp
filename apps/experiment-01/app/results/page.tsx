@@ -67,6 +67,22 @@ const Result = () => {
   const [predictionResult, setPredictionResult] = useState<ECGData | null>(
     null
   );
+  const [email, setEmail] = useState("");
+    
+    
+      useEffect(() => {
+        const authToken = localStorage.getItem(
+          "sb-onroqajvamgdrnrjnzzu-auth-token"
+        );
+        if (!authToken) {
+          console.error("User not authenticated");
+          return;
+        }
+    
+        const { user } = JSON.parse(authToken);
+        setEmail(user.email);
+  
+      }, []);
   const ECGChartDisplayComponent = dynamic(
     () => import("@/components/zoomable-linecharts"),
     {
@@ -255,7 +271,7 @@ const Result = () => {
     );
   };
 
-  return (
+  return ( email &&
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="overflow-hidden px-4 md:px-6 lg:px-8">

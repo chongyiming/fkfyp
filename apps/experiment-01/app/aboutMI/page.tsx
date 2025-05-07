@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SidebarProvider,
   SidebarInset,
@@ -48,6 +48,7 @@ ChartJS.register(
 
 const InteractiveECGChart = () => {
   // Generate one complete ECG cycle (1000ms)
+  
   const generateECGData = () => {
     const dataPoints = [];
     for (let t = 0; t <= 1000; t += 2) {
@@ -204,6 +205,7 @@ const ECGChart: React.FC<ECGChartProps> = ({
   height = 200,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
 
   // returns one cardiac cycle of 'length' samples
   const generateECGData = (length: number, shiftMs: number = 0): number[] => {
@@ -372,8 +374,26 @@ const ECGChart: React.FC<ECGChartProps> = ({
   );
 };
 
+
+
 export default function MyocardialInfarctionPage() {
-  return (
+  const [email, setEmail] = useState("");
+  
+  
+    useEffect(() => {
+      const authToken = localStorage.getItem(
+        "sb-onroqajvamgdrnrjnzzu-auth-token"
+      );
+      if (!authToken) {
+        console.error("User not authenticated");
+        return;
+      }
+  
+      const { user } = JSON.parse(authToken);
+      setEmail(user.email);
+
+    }, []);
+  return ( email &&
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="px-4 md:px-6 lg:px-8">
