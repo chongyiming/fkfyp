@@ -139,8 +139,8 @@ const Homepage = () => {
   const [activeModalData, setActiveModalData] = useState<ECGData | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const router = useRouter();
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const contractAddress = "0x7AEF24a023a107B66084F2A6197456Bee256BB0F";
+  // const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  // const contractAddress = "0x7AEF24a023a107B66084F2A6197456Bee256BB0F";
   // Greeting based on time of day
   const currentHour = new Date().getHours();
   let greeting = "Good morning";
@@ -190,7 +190,7 @@ const Homepage = () => {
       setEcgStats(stats);
     };
     fetchDashboardData();
-    checkWalletConnection();
+    // checkWalletConnection();
   }, []);
 
   useEffect(() => {
@@ -212,99 +212,99 @@ const Homepage = () => {
     }
   }, [isResultModalOpen]); // ✅ only triggers when isResultModalOpen changes
 
-  async function checkWalletConnection() {
-    if (window.ethereum) {
-      try {
-        const sepoliaChainId = "0xaa36a7";
+  // async function checkWalletConnection() {
+  //   if (window.ethereum) {
+  //     try {
+  //       const sepoliaChainId = "0xaa36a7";
 
-        // Get connected accounts
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
+  //       // Get connected accounts
+  //       const accounts = await window.ethereum.request({
+  //         method: "eth_accounts",
+  //       });
 
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        }
+  //       if (accounts.length > 0) {
+  //         setWalletAddress(accounts[0]);
+  //       }
 
-        // Get current chain ID
-        const chainId = await window.ethereum.request({
-          method: "eth_chainId",
-        });
+  //       // Get current chain ID
+  //       const chainId = await window.ethereum.request({
+  //         method: "eth_chainId",
+  //       });
 
-        // Force switch to Sepolia if not already on it
-        if (chainId !== sepoliaChainId) {
-          try {
-            await window.ethereum.request({
-              method: "wallet_switchEthereumChain",
-              params: [{ chainId: sepoliaChainId }],
-            });
-          } catch (switchError: any) {
-            // If Sepolia not added, add it
-            if (switchError.code === 4902) {
-              try {
-                await window.ethereum.request({
-                  method: "wallet_addEthereumChain",
-                  params: [
-                    {
-                      chainId: sepoliaChainId,
-                      chainName: "Sepolia Test Network",
-                      nativeCurrency: {
-                        name: "Sepolia Ether",
-                        symbol: "ETH",
-                        decimals: 18,
-                      },
-                      rpcUrls: ["https://rpc.sepolia.org"],
-                      blockExplorerUrls: ["https://sepolia.etherscan.io"],
-                    },
-                  ],
-                });
-              } catch (addError) {
-                console.error("Error adding Sepolia:", addError);
-              }
-            } else {
-              console.error("Error switching to Sepolia:", switchError);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error checking wallet connection:", error);
-      }
-    }
-  }
+  //       // Force switch to Sepolia if not already on it
+  //       if (chainId !== sepoliaChainId) {
+  //         try {
+  //           await window.ethereum.request({
+  //             method: "wallet_switchEthereumChain",
+  //             params: [{ chainId: sepoliaChainId }],
+  //           });
+  //         } catch (switchError: any) {
+  //           // If Sepolia not added, add it
+  //           if (switchError.code === 4902) {
+  //             try {
+  //               await window.ethereum.request({
+  //                 method: "wallet_addEthereumChain",
+  //                 params: [
+  //                   {
+  //                     chainId: sepoliaChainId,
+  //                     chainName: "Sepolia Test Network",
+  //                     nativeCurrency: {
+  //                       name: "Sepolia Ether",
+  //                       symbol: "ETH",
+  //                       decimals: 18,
+  //                     },
+  //                     rpcUrls: ["https://rpc.sepolia.org"],
+  //                     blockExplorerUrls: ["https://sepolia.etherscan.io"],
+  //                   },
+  //                 ],
+  //               });
+  //             } catch (addError) {
+  //               console.error("Error adding Sepolia:", addError);
+  //             }
+  //           } else {
+  //             console.error("Error switching to Sepolia:", switchError);
+  //           }
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking wallet connection:", error);
+  //     }
+  //   }
+  // }
 
-  async function mintNFT(normValue: number) {
-    try {
-      if (!window.ethereum) {
-        throw new Error("Please install MetaMask!");
-      }
+  // async function mintNFT(normValue: number) {
+  //   try {
+  //     if (!window.ethereum) {
+  //       throw new Error("Please install MetaMask!");
+  //     }
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
+  //     const provider = new ethers.BrowserProvider(window.ethereum);
+  //     const signer = await provider.getSigner();
 
-      // 3. Cast the contract to your interface
-      const contract = new ethers.Contract(
-        contractAddress,
-        contractABI,
-        signer
-      ) as unknown as IMyContract;
+  //     // 3. Cast the contract to your interface
+  //     const contract = new ethers.Contract(
+  //       contractAddress,
+  //       contractABI,
+  //       signer
+  //     ) as unknown as IMyContract;
 
-      // 4. Now TypeScript knows mint exists
-      const tx = await contract.mint(normValue, { value: 0n }); // Using 0n bigint for ETH value
+  //     // 4. Now TypeScript knows mint exists
+  //     const tx = await contract.mint(normValue, { value: 0n }); // Using 0n bigint for ETH value
 
-      await tx.wait();
+  //     await tx.wait();
 
-      // For getting return value (alternative approach)
-      const tokenId = await provider.call({
-        to: contractAddress,
-        data: contract.interface.encodeFunctionData("mint", [normValue]),
-      });
+  //     // For getting return value (alternative approach)
+  //     const tokenId = await provider.call({
+  //       to: contractAddress,
+  //       data: contract.interface.encodeFunctionData("mint", [normValue]),
+  //     });
 
-      return Number(BigInt(tokenId));
-    } catch (error) {
-      console.error("Minting failed:", error);
-      throw error;
-    }
-  }
+  //     return Number(BigInt(tokenId));
+  //   } catch (error) {
+  //     console.error("Minting failed:", error);
+  //     throw error;
+  //   }
+  // }
 
   async function setUserInfo(email: string) {
     const { data, error } = await supabase
@@ -341,80 +341,80 @@ const Homepage = () => {
     console.log("history", parsedData);
     setHistory(parsedData);
   }
-  const connectWallet = async () => {
-    try {
-      if (!window.ethereum) {
-        alert(
-          "Please install MetaMask browser extension to use this feature! \n\nRefresh this page once you have install Metamask"
-        );
-        return;
-      }
+  // const connectWallet = async () => {
+  //   try {
+  //     if (!window.ethereum) {
+  //       alert(
+  //         "Please install MetaMask browser extension to use this feature! \n\nRefresh this page once you have install Metamask"
+  //       );
+  //       return;
+  //     }
 
-      const sepoliaChainId = "0xaa36a7";
+  //     const sepoliaChainId = "0xaa36a7";
 
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      const account = accounts[0];
-      setWalletAddress(account);
+  //     const accounts = await window.ethereum.request({
+  //       method: "eth_requestAccounts",
+  //     });
+  //     const account = accounts[0];
+  //     setWalletAddress(account);
 
-      const chainId = await window.ethereum.request({ method: "eth_chainId" });
+  //     const chainId = await window.ethereum.request({ method: "eth_chainId" });
 
-      if (chainId !== sepoliaChainId) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: sepoliaChainId }],
-          });
-        } catch (switchError: any) {
-          if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: "wallet_addEthereumChain",
-                params: [
-                  {
-                    chainId: sepoliaChainId,
-                    chainName: "Sepolia Test Network",
-                    nativeCurrency: {
-                      name: "Sepolia Ether",
-                      symbol: "ETH",
-                      decimals: 18,
-                    },
-                    rpcUrls: ["https://rpc.sepolia.org"],
-                    blockExplorerUrls: ["https://sepolia.etherscan.io"],
-                  },
-                ],
-              });
-            } catch (addError) {
-              console.error("Error adding Sepolia:", addError);
-            }
-          } else {
-            console.error("Error switching to Sepolia:", switchError);
-          }
-        }
-      }
+  //     if (chainId !== sepoliaChainId) {
+  //       try {
+  //         await window.ethereum.request({
+  //           method: "wallet_switchEthereumChain",
+  //           params: [{ chainId: sepoliaChainId }],
+  //         });
+  //       } catch (switchError: any) {
+  //         if (switchError.code === 4902) {
+  //           try {
+  //             await window.ethereum.request({
+  //               method: "wallet_addEthereumChain",
+  //               params: [
+  //                 {
+  //                   chainId: sepoliaChainId,
+  //                   chainName: "Sepolia Test Network",
+  //                   nativeCurrency: {
+  //                     name: "Sepolia Ether",
+  //                     symbol: "ETH",
+  //                     decimals: 18,
+  //                   },
+  //                   rpcUrls: ["https://rpc.sepolia.org"],
+  //                   blockExplorerUrls: ["https://sepolia.etherscan.io"],
+  //                 },
+  //               ],
+  //             });
+  //           } catch (addError) {
+  //             console.error("Error adding Sepolia:", addError);
+  //           }
+  //         } else {
+  //           console.error("Error switching to Sepolia:", switchError);
+  //         }
+  //       }
+  //     }
 
-      // Handle account changes
-      window.ethereum.on("accountsChanged", (newAccounts: string[]) => {
-        setWalletAddress(newAccounts[0] || null);
-      });
+  //     // Handle account changes
+  //     window.ethereum.on("accountsChanged", (newAccounts: string[]) => {
+  //       setWalletAddress(newAccounts[0] || null);
+  //     });
 
-      // Handle chain changes
-      window.ethereum.on("chainChanged", async (newChainId: string) => {
-        if (newChainId !== sepoliaChainId) {
-          alert("Please switch to the Sepolia network!");
-          setWalletAddress(null);
-        } else {
-          const accounts = await window.ethereum!.request({
-            method: "eth_accounts",
-          });
-          setWalletAddress(accounts[0] || null);
-        }
-      });
-    } catch (error) {
-      console.error("Error connecting to MetaMask:", error);
-    }
-  };
+  //     // Handle chain changes
+  //     window.ethereum.on("chainChanged", async (newChainId: string) => {
+  //       if (newChainId !== sepoliaChainId) {
+  //         alert("Please switch to the Sepolia network!");
+  //         setWalletAddress(null);
+  //       } else {
+  //         const accounts = await window.ethereum!.request({
+  //           method: "eth_accounts",
+  //         });
+  //         setWalletAddress(accounts[0] || null);
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.error("Error connecting to MetaMask:", error);
+  //   }
+  // };
 
   const getUserECGStats = async (email: string) => {
     const { data, error } = await supabase
@@ -688,7 +688,7 @@ const Homepage = () => {
           }
           // Set prediction result and open modal
           await getHistory(email);
-          mintNFT(result.norm_prob);
+          // mintNFT(result.norm_prob);
           setPredictionResult(resultData);
           setActiveModalData(resultData);
           setIsResultModalOpen(true);
@@ -732,11 +732,11 @@ const Homepage = () => {
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
-                <Button className={styles.walletButton} onClick={connectWallet}>
+                {/* <Button className={styles.walletButton} onClick={connectWallet}>
                   {walletAddress
                     ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`
                     : "Connect Wallet"}
-                </Button>
+                </Button> */}
               </div>
             </div>
           </header>
@@ -829,37 +829,7 @@ const Homepage = () => {
 
                   {/* Upload button */}
                   <Button
-                    onClick={async () => {
-                      if (!walletAddress) {
-                        alert("Please connect your wallet first.");
-                        return;
-                      }
-
-                      try {
-                        if (window.ethereum) {
-                          const balanceInWei = await window.ethereum.request({
-                            method: "eth_getBalance",
-                            params: [walletAddress, "latest"],
-                          });
-
-                          const balanceInEth = parseFloat(
-                            (parseInt(balanceInWei, 16) / 1e18).toFixed(4)
-                          );
-
-                          if (balanceInEth < 0.01) {
-                            alert(
-                              "Insufficient balance. You need at least 0.01 ETH balances in wallet."
-                            );
-                            return;
-                          }
-                        }
-
-                        handleUpload();
-                      } catch (error) {
-                        console.error("Error checking balance:", error);
-                        alert("Failed to check wallet balance.");
-                      }
-                    }}
+                    onClick={handleUpload}
                     disabled={isUploading || files.length === 0}
                     className="mt-4 w-full"
                   >
