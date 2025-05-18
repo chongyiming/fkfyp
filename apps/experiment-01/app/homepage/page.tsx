@@ -582,7 +582,6 @@ const Homepage = () => {
       </Dialog>
     );
   };
-
   const handleUpload = async () => {
     if (files.length === 0) {
       alert("No files selected!");
@@ -590,18 +589,17 @@ const Homepage = () => {
     }
 
     setIsUploading(true);
+    setUploadSuccess(false); // Reset success state at start of upload
 
     // Check if any file is not a .dat file
     const invalidFiles = files.filter((file) => !file.name.endsWith(".dat"));
     if (invalidFiles.length > 0) {
       alert("Error: Please upload .dat file");
       setIsUploading(false);
-      setUploadSuccess(false);
       return;
     } else if (files.length > 1) {
       alert("Please only upload one file");
       setIsUploading(false);
-      setUploadSuccess(false);
       return;
     }
 
@@ -623,6 +621,8 @@ const Homepage = () => {
       const folderName = currentDate.toISOString().replace(/[:.]/g, "-");
       const basePath = `${userEmail}/ECG/${folderName}/`;
 
+      let uploadSuccessful = true; // Track if upload was successful
+
       for (const file of files) {
         const sanitizedFileName = file.name
           .replace(/\s+/g, "_")
@@ -635,6 +635,7 @@ const Homepage = () => {
 
         if (error) {
           alert(`Error uploading file ${file.name}: ${error.message}`);
+          uploadSuccessful = false;
           continue;
         }
 
@@ -642,19 +643,18 @@ const Homepage = () => {
           const formData = new FormData();
           formData.append("file", file);
 
-          // Uncomment the appropriate endpoint
-          const response = await fetch(
-            "https://test-485822052532.asia-southeast1.run.app/predict",
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          // const response = await fetch(
+          //   "https://test-485822052532.asia-southeast1.run.app/predict",
+          //   {
+          //     method: "POST",
+          //     body: formData,
+          //   }
+          // );
 
-          // const response = await fetch("http://127.0.0.1:5000/predict", {
-          //   method: "POST",
-          //   body: formData,
-          // });
+          const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: formData,
+          });
 
           if (!response.ok) {
             throw new Error(`API call failed with status ${response.status}`);
@@ -685,20 +685,25 @@ const Homepage = () => {
 
           if (insertError) {
             console.error("Error inserting into history:", insertError);
+            uploadSuccessful = false;
+          } else {
+            // Only set success states if everything worked
+            await getHistory(email);
+            setPredictionResult(resultData);
+            setActiveModalData(resultData);
+            setIsResultModalOpen(true);
           }
-          // Set prediction result and open modal
-          await getHistory(email);
-          // mintNFT(result.norm_prob);
-          setPredictionResult(resultData);
-          setActiveModalData(resultData);
-          setIsResultModalOpen(true);
         } catch (apiError: any) {
           alert(`Error processing ${file.name}: ${apiError}`);
+          uploadSuccessful = false;
         }
       }
 
-      setUploadSuccess(true);
-      setFiles([]);
+      // Only show success message if everything worked
+      if (uploadSuccessful) {
+        setUploadSuccess(true);
+        setFiles([]);
+      }
     } catch (error: any) {
       alert(`Upload failed: ${error}`);
     } finally {
