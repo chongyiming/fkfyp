@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect , useRef} from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import {
   FileText,
   CheckCircle,
@@ -143,6 +145,8 @@ const Result = () => {
   const ResultModal = () => {
     const dataToDisplay = activeModalData;
 
+    const pdfRef = useRef<HTMLDivElement>(null);
+   
     // State for selected leads
     const [selectedLeads, setSelectedLeads] = useState<number[]>(
       Array.from({ length: 12 }, (_, i) => i)
@@ -176,10 +180,32 @@ const Result = () => {
     };
 
     if (!dataToDisplay) return null;
+    
+     const exportToPDF = async () => {
+     if (!pdfRef.current) {
+      console.error("PDF ref not found!");
+      return;
+    }
+    
+    const canvas = await html2canvas(pdfRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor:' #18181B',
+    });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: [canvas.width, canvas.height],
+    });
+    pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+    pdf.save(`ECG_Result_${dataToDisplay?.fileName || "report"}.pdf`);
+  };
 
     return (
       <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
         <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
+          <div ref={pdfRef} className="grid gap-4 py-4" style ={{ padding: '15px'}}>
           <DialogHeader>
             <DialogTitle>ECG Results for {dataToDisplay.fileName}</DialogTitle>
           </DialogHeader>
@@ -194,7 +220,7 @@ const Result = () => {
                       style={{ width: `${dataToDisplay.norm_prob}%` }}
                     />
                   </div>
-                  <span className="text-sm text-gray-600 w-8">
+                  <span className="text-sm text-white-600 w-8">
                     {dataToDisplay.norm_prob}%
                   </span>
                 </div>
@@ -208,7 +234,7 @@ const Result = () => {
                       style={{ width: `${dataToDisplay.mi_prob}%` }}
                     />
                   </div>
-                  <span className="text-sm text-gray-600 w-8">
+                  <span className="text-sm text-white-600 w-8">
                     {dataToDisplay.mi_prob}%
                   </span>
                 </div>
@@ -266,6 +292,10 @@ const Result = () => {
               </div>
             )}
           </div>
+          </div>
+          <Button className="mt-4 w-full" onClick={exportToPDF}>
+            Download PDF Report
+          </Button>
         </DialogContent>
       </Dialog>
     );
